@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.write.TouristWriteMapper">
+	<!--  保存游客信息-->
+	<insert id="insertTourists" parameterType="com.pzj.trade.order.entity.TouristEntity">
+		insert into t_order_tourist
+		(order_id,
+		merch_id,
+		name,
+		idcard,
+		mobile,
+		name_spell,
+		other
+		)
+		values
+			<foreach collection="tourists" index="index" item="item" separator=",">
+			(
+				#{item.order_id},
+				#{item.merch_id},
+				#{item.name},
+				#{item.idcard},
+				#{item.mobile},
+				#{item.name_spell},
+				#{item.other}
+			)
+			</foreach>
+	</insert>
+	
+	<!-- 更新游客信息 -->
+	<update id="updateTourist" parameterType="com.pzj.trade.order.entity.TouristEditModel">
+		update
+			t_order_tourist
+		<set>
+			<if test="name !=null">
+			name = #{name},
+			</if>
+			<if test="mobile !=null">
+			mobile = #{mobile},
+			</if>
+			<if test="idcard !=null">
+			idcard = #{idcard},
+			</if>
+		</set>
+		where
+			tourist_id = #{tourist_id}
+	</update>
+	
+	<!-- 根据游客ID及订单ID查询游客. -->
+	<select id="queryTouristById" resultType="com.pzj.trade.order.entity.TouristEntity">
+		select
+			tourist_id,
+			order_id,
+			merch_id,
+			name,
+			idcard,
+			mobile,
+			name_spell,
+			other
+		from
+			t_order_tourist
+		where
+			tourist_id = #{tourist_id}
+		and
+			order_id = #{order_id}
+	</select>
+</mapper>

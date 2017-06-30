@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://code.alibabatech.com/schema/dubbo
+    http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<dubbo:service interface="com.pzj.trade.order.service.OrderQueryService" ref="orderQueryService" version="1.1" retries="1" timeout="5000" />
+	<dubbo:service interface="com.pzj.trade.financeCenter.service.FinanceCenterQueryService" ref="financeCenterQueryService" version="1.1" retries="1" timeout="10000" />
+	
+	<dubbo:service interface="com.pzj.trade.order.service.DeliveryQueryService" ref="deliveryQueryService" version="1.1" retries="1" timeout="5000" />
+	<dubbo:service interface="com.pzj.trade.order.service.OrderService" ref="orderService" version="1.1">
+		<dubbo:method name="createOrder" retries="0" timeout="10000" />
+		<dubbo:method name="createMultilevelOrder" retries="0" timeout="10000" />
+	</dubbo:service>
+	
+	<dubbo:service interface="com.pzj.trade.refund.service.RefundService" ref="refundService" version="1.1" />
+	<dubbo:service interface="com.pzj.trade.withdraw.service.CashPostalService" ref="cashPostalService" version="1.1">
+		<dubbo:method name="cashPostal" retries="0" timeout="5000" />
+	</dubbo:service>
+	<dubbo:service interface="com.pzj.trade.withdraw.service.WithdrawQueryService" ref="withdrawQueryService" version="1.1" />
+	<dubbo:service interface="com.pzj.trade.payment.service.PaymentService" ref="paymentService" version="1.1" retries="0" timeout="5000" />
+	<dubbo:service interface="com.pzj.trade.order.service.CancelService" ref="cancelService" version="1.1" retries="0" timeout="5000" />
+	<dubbo:service interface="com.pzj.trade.payment.service.ThirdPartyRefundCabackService" ref="thirdPartyRefundCabackService" version="1.1" retries="0" timeout="5000" />
+	<dubbo:service interface="com.pzj.voucher.service.VoucherService" ref="voucherService" version="1.1" timeout="30000"/>
+	
+	<dubbo:service interface="com.pzj.trade.confirm.service.ConfirmService" ref="confirmService" version="1.1" timeout="3000" />
+	
+	<dubbo:service interface="com.pzj.trade.confirm.service.ConfirmQueryService" ref="confirmQueryService" version="1.1" retries="0" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.ack.service.OrderAckService" ref="orderAckService" version="1.1" retries="0" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.confirm.service.ConfirmCodeService" ref="confirmCodeService" version="1.1" retries="0" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.clearing.service.ClearingService" ref="clearingService" version="1.1" retries="0" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.clearing.service.ClearingQueryService" ref="clearingQueryService" version="1.1" retries="0" timeout="30000" />
+
+	<dubbo:service interface="com.pzj.trade.refund.service.RefundApplyService" ref="refundApplyService" version="1.1" retries="0" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.refund.service.RefundAuditService" ref="refundAuditService" version="1.1" retries="0" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.refund.service.RefundQueryService" ref="refundQueryService" version="1.1" retries="0" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.payment.service.PaymentTaskService" ref="paymentTaskService" version="1.1" retries="0" timeout="30000" />
+	
+	
+	<dubbo:service interface="com.pzj.trade.sms.service.ISendTradeVoucherSMSService" ref="sendTradeVoucherSMSService" version="1.1" timeout="30000" />
+	
+
+	<dubbo:service interface="com.pzj.trade.export.service.OrderExportService" ref="orderExportService" version="1.1" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.export.service.OrderExportQueryService" ref="orderExportQueryService" version="1.1" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.order.service.FilledService" ref="filledService" version="1.1" timeout="30000" />
+	
+   <!-- 预约单相关接口 -->
+    <dubbo:service interface="com.pzj.trade.book.service.BookService" ref="bookService" version="1.1" timeout="30000" />
+    <dubbo:service interface="com.pzj.trade.book.service.BookTaskService" ref="bookTaskService" version="1.1" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.book.service.BookQueryService" ref="bookQueryService" version="1.1" timeout="30000" />
+	
+	<dubbo:service interface="com.pzj.trade.order.service.TransferAccountsService" ref="transferAccountsService" version="1.1" timeout="30000" />
+	<dubbo:service interface="com.pzj.trade.order.service.OrderValidateService" ref="orderValidateService" version="1.1" timeout="30000" />
+	
+</beans>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.write.OrderStrategyWriteMapper">
+
+	<!-- 保存订单商品政策. -->
+	<insert id="insertStrategy" parameterType="com.pzj.trade.order.entity.OrderStrategyEntity">
+		insert into t_order_strategy (
+			order_id,
+			merch_id,
+			channel_id,
+			strategy_id,
+			discount_amount,
+			discount_type,
+			discount_state,
+			discount_remark,
+			create_time
+		)values 
+			<foreach collection="strategies" item="strategy" index="index" separator=",">
+			(
+			#{strategy.orderId},
+			#{strategy.merchId},
+			#{strategy.channelId},
+			#{strategy.strategyId},
+			#{strategy.discountAmount},
+			#{strategy.discountType},
+			#{strategy.discountState},
+			#{strategy.discountRemark},
+			sysdate()
+			)
+		</foreach>
+	</insert>
+	
+	<insert id="insertMultiStrategy" parameterType="com.pzj.trade.order.entity.OrderStrategyEntity">
+		insert into t_order_strategy (
+			order_id,
+			merch_id,
+			channel_id,
+			strategy_id,
+			advice_price,
+			settlement_price,
+			rebate_method,
+			interval_day,
+			rebate_settlement,
+			price,
+			after_rebate_amount
+		)values 
+			<foreach collection="strategies" item="strategy" index="index" separator=",">
+			(
+			#{strategy.orderId},
+			#{strategy.merchId},
+			#{strategy.channelId},
+			#{strategy.strategyId},
+			#{strategy.advice_price},
+			#{strategy.settlement_price},
+			#{strategy.rebate_method},
+			#{strategy.interval_day},
+			#{strategy.rebate_settlement},
+			#{strategy.price},
+			#{strategy.after_rebate_amount}
+			)
+		</foreach>
+	</insert>
+	
+	<update id="updateStrategyToAccountTransffered" parameterType="com.pzj.trade.order.model.TransferredMerchStrategyModel">
+		<foreach collection="models" item="model" index="index" separator=";">
+			update t_order_strategy
+				set 
+					affer_rebate_transferred_state=1,
+					affer_rebate_transferred_time=#{model.transfeeredTime}	
+			    where 
+			    	order_id=#{model.orderId} and merch_id =#{model.merchId}
+		</foreach>
+	</update>
+	
+	<select id="getSingleOrderStrategy" resultType="com.pzj.trade.order.entity.OrderStrategyEntity">
+		select 
+			order_id,
+			merch_id,
+			channel_id,
+			strategy_id,
+			advice_price,
+			settlement_price,
+			rebate_method,
+			rebate_settlement,
+			price,
+			after_rebate_amount
+		from t_order_strategy
+			where order_id=#{orderId} and merch_id=#{merchId}
+	</select>
+	
+	
+</mapper>

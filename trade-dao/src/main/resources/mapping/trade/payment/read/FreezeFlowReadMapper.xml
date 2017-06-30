@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.trade.payment.read.FreezeFlowReadMapper">
+	<select id="getFreezeFlow" resultType="com.pzj.trade.payment.entity.FreezeFlowEntity">
+		select
+		freeze_id,
+		order_id,
+		receive_type,
+		sign_id,
+		freeze_state,
+		balance_amount,
+		third_amount,
+		create_time,
+		update_time
+		from
+		t_freeze_flow
+		where
+		order_id = #{order_id}
+		<if test="receive_type != null">
+		 and receive_type=#{receive_type}
+		</if>
+		<if test="freeze_state != null">
+		 and freeze_state=#{freeze_state}		
+		</if>
+	</select>
+	
+	<select id="getPayFreezeFlowByOrderId" resultType="com.pzj.trade.payment.entity.FreezeFlowEntity">
+		select
+		freeze_state,
+		balance_amount,
+		third_amount
+		from
+		t_freeze_flow
+		where
+		order_id = #{order_id} and receive_type=1
+	</select>
+	
+	<select id="getFreezeFlowsByOrderId" resultType="com.pzj.trade.payment.entity.FreezeFlowEntity">
+		select
+		freeze_state,
+		balance_amount,
+		third_amount,
+		receive_type
+		from
+		t_freeze_flow where
+		order_id = #{order_id}
+	</select>
+	
+
+	<select id="getFreezeFlowByRefundId" resultType="com.pzj.trade.payment.entity.FreezeFlowEntity"
+		parameterType="java.lang.String">
+		select
+		order_id,
+		balance_amount,
+		third_amount
+		from
+		t_freeze_flow
+		where
+		sign_id = #{refundId}
+	</select>
+</mapper>

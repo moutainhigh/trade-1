@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.TicketSellerOrdersReadMapper">
+
+	<!-- 统计查询所属售票员订单量 -->
+    <select id="queryOrderTotalNum" resultType="com.pzj.trade.order.entity.OrderCountEntity">
+    select 
+		count(distinct o.order_id) as order_num,
+		    	sum(o.total_num) as merch_num,
+		    	sum(o.total_amount) as amount
+		 from t_order o
+		where order_id in ( select 
+						    	distinct o.order_id
+						    from
+						        t_order as o
+						      left join
+									t_order_merch m
+								on
+									o.transaction_id = m.order_id
+								<include  refid="where_condition_by_ticket_seller" />)
+    </select>
+
+	<!-- 售票员分页查询订单. -->
+    <select id="queryOrdersByScrollData" resultType="com.pzj.trade.order.entity.TicketSellerOrdersEntity">
+        select
+        	o.order_id,
+        	o.transaction_id,
+			o.order_status,
+			o.reseller_id,
+			o.contactee,
+			o.contact_mobile,
+			o.create_time,
+			o.total_amount,
+			o.refund_amount,
+			m.merch_id,
+			m.voucher_id,
+			m.merch_name,
+			m.sku_name,
+			m.merch_type,
+			m.is_refunding,
+			m.total_num,
+			m.check_num,
+			m.refund_num,
+			m.refunding_num,
+			m.product_id,
+			m.product_varie,
+			m.start_time,
+			(select price from t_order_strategy s where s.order_id=o.order_id and s.merch_id=m.merch_id) price
+        from
+        	t_order as o
+        left join
+			t_order_merch m
+		on
+			o.transaction_id = m.order_id
+		
+		join (
+			select 
+		    	distinct o.order_id
+		    	from
+		        t_order as o
+		      	left join
+					t_order_merch m
+				on
+				o.transaction_id = m.order_id
+				<include  refid="where_condition_by_ticket_seller" />
+				order by
+					o.create_time desc
+				limit #{page_index},#{page_size}
+		) as o2	
+		on o.order_id=o2.order_id
+		order by
+			o.create_time desc
+    </select>
+
+	<sql id="where_condition_by_ticket_seller">
+		where order_level=1
+		and o.operator_id = #{param.operator_id}
+		
+		<if test="param.order_id !=null">
+	         and o.transaction_id=#{param.order_id}
+	    </if>
+	    <if test="param.order_status &gt; 0">
+	    	and o.order_status = #{param.order_status}
+		</if>
+		<if test="param.resellerIds !=null and param.resellerIds.size() > 0">
+			and o.reseller_id in 
+			<foreach collection="param.resellerIds" index="index" item="reseller" open="(" close=")" separator=",">
+				#{reseller}
+			</foreach>
+		</if>
+		<if test="param.guide_ids !=null and param.guide_ids.size() > 0">
+			and o.guide_id in 
+			<foreach collection="param.guide_ids" index="index" item="guide" open="(" close=")" separator=",">
+				#{guide}
+			</foreach>
+		</if>
+		<if test="param.contactee !=null">
+			and o.contactee like CONCAT('%',#{param.contactee},'%')
+		</if>
+		<if test="param.contact_mobile !=null">
+			and o.contact_mobile = #{param.contact_mobile}
+		</if>
+		<if test="param.idcard_no !=null">
+			and o.idcard_no = #{param.idcard_no}
+		</if>
+		<!-- 支付类型必须为现金或后付 -->
+		<if test="param.pay_way == 0">
+			and o.pay_way in(5,6)
+		</if>
+		<if test="param.pay_way &gt; 0">
+			and o.pay_way = #{param.pay_way}
+		</if>
+		<if test="param.start_date != null">
+			<![CDATA[ and o.create_time >= date_format(#{param.start_date},'%Y-%m-%d 00:00:00')]]>
+		</if>
+		<if test="param.end_date != null">
+			<![CDATA[ and o.create_time <= date_format(#{param.end_date},'%Y-%m-%d 23:59:59')]]>
+		</if> 
+		<if test="param.voucher_ids != null  and param.voucher_ids.size()>0">
+			and m.voucher_id in
+			<foreach collection="param.voucher_ids" item="v_id" separator="," open="(" close=")">
+				#{v_id}
+			</foreach>
+		</if>
+		<if test="param.merch_state &gt; 0">
+			and m.merch_state=#{param.merch_state}
+		</if>
+		<if test="param.refunding">
+			and m.is_refunding=1
+		</if>
+		<if test="param.merch_name !=null">
+			and m.merch_name like CONCAT('%',#{param.merch_name},'%')
+		</if>
+		<if test="param.merch_type &gt; 0">
+			and m.merch_type=#{param.merch_type}
+		</if>
+		<if test="param.product_varie &gt; 0">
+			and m.product_varie=#{param.product_varie}
+		</if>
+		<if test="param.start_travel_time !=null">
+			<![CDATA[ and m.start_time >= date_format(#{param.start_travel_time},'%Y-%m-%d 00:00:00')]]>
+		</if>
+		<if test="param.end_travel_time !=null">
+			<![CDATA[ and m.expire_time <= date_format(#{param.end_travel_time},'%Y-%m-%d 23:59:59')]]>
+		</if>
+	</sql>
+
+</mapper>

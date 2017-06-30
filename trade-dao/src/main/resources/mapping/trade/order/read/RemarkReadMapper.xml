@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.RemarkReadMapper">
+
+	<select id="getRemarkByOrderId" resultType="com.pzj.trade.order.entity.RemarkEntity">
+		select
+			remark_id,
+			order_id,
+			remark,
+			operator_id,
+			operator_name,
+			operator_type,
+			create_time
+		from
+			t_order_remarks
+		where
+			order_id=#{orderId}
+	</select>
+
+	<select id="queryRemarkPageTotalByOrderId" resultType="int">
+		select
+			count(remark_id)
+		from
+			t_order_remarks
+		where
+			order_id=#{orderId}
+	</select>
+
+	<select id="queryRemarkPageByOrderVO" resultType="com.pzj.trade.order.entity.RemarkEntity">
+		select
+			remark_id,
+			order_id,
+			remark,
+			operator_id,
+			operator_name,
+			operator_type,
+			create_time
+		from
+			t_order_remarks
+		where
+			order_id=#{param.orderId}
+			limit #{pageIndex},#{pageSize}
+	</select>
+
+</mapper>

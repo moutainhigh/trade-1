@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.OrderExtendAttrReadMapper">
+
+	<!-- 查询订单填单项. -->
+	<select id="queryOrderExtendAttrListByParam" resultType="com.pzj.trade.order.entity.OrderExtendAttrEntity">
+		select
+			order_id,
+			transaction_id,
+			attr_group,
+			attr_key,
+			attr_value,
+			create_time
+		from
+			t_order_extend_attr
+		<where>
+		<if test="extendAttr.transaction_id !=null">
+			and transaction_id = #{extendAttr.transaction_id}
+		</if>
+		<if test="extendAttr.order_id !=null">
+			and order_id = #{extendAttr.order_id}
+		</if>
+		<if test="extendAttr.attr_group !=null">
+			and attr_group = #{extendAttr.attr_group}
+		</if>
+		</where>
+	</select>
+	
+	
+	
+</mapper>

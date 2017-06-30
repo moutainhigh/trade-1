@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.OrderForPaymentReadMapper">
+		<sql id="column_list">
+			order_id,
+			transaction_id,
+			p_order_id,
+			payer_id,
+			operator_id,
+			supplier_id,
+			reseller_id,
+			travel,
+			travel_depart_id,
+			depart,
+			guide_id,
+			guider,
+			need_confirm,
+			order_status,
+			total_amount,
+			refund_amount,
+			total_num,
+			checked_num,
+			refund_num,
+			order_type,
+			sale_port,
+			contactee,
+			contact_mobile,
+			idcard_no,
+			create_time,
+			pay_time,
+			third_code,
+			third_pay_type,
+			pay_way,
+			confirm_time,
+			settlement_price,
+			need_confirm ,
+			agent_flag,
+			is_direct,
+			online_pay,
+			is_dock,
+			version,
+			order_level
+		</sql>
+	<select id="queryChildOrderNotPaymentForCance" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select <include refid="column_list" />
+			from t_order
+		where	
+			pay_state=1 and order_id!=transaction_id
+			<![CDATA[ and (UNIX_TIMESTAMP(pay_time)+60*60) < UNIX_TIMESTAMP(#{cancelTime})]]>
+		  <if test="lastDate!=null">
+			<![CDATA[ and create_time < #{lastDate}]]>
+		  </if>
+		  order by create_time desc limit 100
+	</select>
+</mapper>

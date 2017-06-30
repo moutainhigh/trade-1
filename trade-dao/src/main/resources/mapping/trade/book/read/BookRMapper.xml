@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.book.dao.read.BookRMapper">
+	<!-- 所有字段 -->
+	<sql id="Base_Column_List">
+		book_id
+		,src_book_id
+		,transaction_id
+		,operator_id
+		,reseller_id
+		,supplier_id
+		,travel_date
+		,book_status
+		,book_type
+		,book_date
+		,total_amount
+		,total_num
+		,delivery_code
+		,book_detail
+		,spu_id
+		,update_time
+	</sql>
+
+	<!-- 字段映射 -->
+	<resultMap id="BaseResultMap" type="com.pzj.core.trade.book.dao.entity.BookEntity">
+		<id column="book_id" property="bookId" jdbcType="VARCHAR" />
+		<result column="src_book_id" jdbcType="VARCHAR" property="srcBookId" />
+		<result column="transaction_id" jdbcType="VARCHAR" property="transactionId" />
+		<result column="operator_id" jdbcType="BIGINT" property="operatorId" />
+		<result column="reseller_id" jdbcType="BIGINT" property="resellerId" />
+		<result column="supplier_id" jdbcType="BIGINT" property="supplierId" />
+		<result column="travel_date" jdbcType="BIGINT" property="travelDate" />
+		<result column="book_status" jdbcType="BIT" property="bookStatus" />
+		<result column="book_type" jdbcType="BIT" property="bookType" />
+		<result column="book_date" jdbcType="BIGINT" property="bookDate" />
+		<result column="total_amount" jdbcType="INTEGER" property="totalAmount" />
+		<result column="total_num" jdbcType="INTEGER" property="totalNum" />
+		<result column="delivery_code" jdbcType="VARCHAR" property="deliveryCode" />
+		<result column="book_detail" jdbcType="VARCHAR" property="bookDetail" />
+		<result column="spu_id" jdbcType="BIGINT" property="spuId" />
+		<result column="update_time" jdbcType="BIGINT" property="updateTime" />
+	</resultMap>
+
+	<select id="selectByBookId" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_book
+		where book_id = #{bookId,jdbcType=VARCHAR}
+	</select>
+
+
+	<select id="selectValidByBookId" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_book
+		where book_id = #{bookId,jdbcType=VARCHAR}
+		and book_status
+		in (1,3)
+	</select>
+
+	<select id="selectBySrcBookId" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_book
+		where src_book_id = #{srcBookId,jdbcType=VARCHAR}
+	</select>
+
+	<select id="selectValidBySrcBookId" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_book
+		where src_book_id = #{srcBookId,jdbcType=VARCHAR}
+		and
+		book_status in (1,3)
+	</select>
+
+	<!-- 参数入参实体：BookQueryEntity -->
+	<sql id="query_of_where">
+		<if test="bParam.bookId != null"> AND book_id = #{bParam.bookId,jdbcType=VARCHAR} </if>
+		<if test="bParam.operatorId != null"> AND operator_id = #{bParam.operatorId,jdbcType=BIGINT}
+		</if>
+		<if test="bParam.supplierId != null"> AND supplier_id = #{bParam.supplierId,jdbcType=BIGINT}
+		</if>
+		<if test="bParam.bookStatus != null"> AND book_status = #{bParam.bookStatus,jdbcType=TINYINT}
+		</if>
+		<if test="bParam.deliveryCode != null"> AND delivery_code =
+			#{bParam.deliveryCode,jdbcType=VARCHAR}
+		</if>
+		<if test="bParam.bookType != null"> AND book_type = #{bParam.bookType,jdbcType=TINYINT} </if>
+		<if test="bParam.bookTypes != null and bParam.bookTypes.size > 0">
+			and book_type in
+			<foreach collection="bParam.bookTypes" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="bParam.resellerIds != null and bParam.resellerIds.size > 0">
+			and reseller_id in
+			<foreach collection="bParam.resellerIds" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="bParam.queryTravelSDate != null">
+			and FROM_UNIXTIME(travel_date/1000,'%Y-%m-%d') &gt;=
+			FROM_UNIXTIME(#{bParam.queryTravelSDate,jdbcType=BIGINT}/1000,'%Y-%m-%d')
+		</if>
+		<if test="bParam.queryTravelEDate != null">
+			and FROM_UNIXTIME(travel_date/1000,'%Y-%m-%d') &lt;=
+			FROM_UNIXTIME(#{bParam.queryTravelEDate,jdbcType=BIGINT}/1000,'%Y-%m-%d')
+		</if>
+		<if test="bParam.queryBookSDate != null">
+			and FROM_UNIXTIME(book_date/1000,'%Y-%m-%d') &gt;=
+			FROM_UNIXTIME(#{bParam.queryBookSDate,jdbcType=BIGINT}/1000,'%Y-%m-%d')
+		</if>
+		<if test="bParam.queryBookEDate != null">
+			and FROM_UNIXTIME(book_date/1000,'%Y-%m-%d') &lt;=
+			FROM_UNIXTIME(#{bParam.queryBookEDate,jdbcType=BIGINT}/1000,'%Y-%m-%d')
+		</if>
+	</sql>
+
+	<select id="selectBooksByParam" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select
+		book_id,reseller_id,operator_id,travel_date,book_date,book_status,book_type,total_amount,total_num,spu_id
+		from t_book
+		<if test="bParam != null">
+			<where>
+				<include refid="query_of_where" />
+			</where>
+			<if test="bParam.orderByClause == null"> order by book_id desc</if>
+			<if test="bParam.orderByClause != null"> order by
+				${bParam.orderByClause}
+			</if>
+			<if test="bParam.page != null">
+				limit #{bParam.page.pageIndex} , #{bParam.page.pageSize}
+			</if>
+		</if>
+
+
+	</select>
+	<select id="countBooksByParam" parameterType="java.util.Map"
+		resultType="java.lang.Integer">
+		select
+		count(book_id)
+		from t_book
+		<if test="bParam != null">
+			<where>
+				<include refid="query_of_where" />
+			</where>
+		</if>
+	</select>
+
+	<!-- 查询待出票并已失效的前置订单 -->
+	<select id="selectInvalidBook" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select
+		book_id,src_book_id,book_status,book_type,book_detail
+		from t_book
+		<where>
+			<if test="bParam != null">
+				<include refid="query_of_where" />
+			</if>
+			<if test="invalidTime != null and invalidTime != 0">
+				and now() &lt; update_time + #{invalidTime}
+			</if>
+
+		</where>
+		order by book_date desc
+	</select>
+
+<!-- 查询待出票并已失效的前置订单 -->
+	<select id="selectquerySparpreisNotCheck" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select
+		book_id,src_book_id,book_status,book_type,book_detail
+		from t_book
+		<where>
+			<if test="bParam != null">
+				<include refid="query_of_where" />
+			</if>
+			<if test="overdueTime != null and overdueTime != 0">
+				and book_date &lt; #{overdueTime}
+			</if>
+
+		</where>
+		order by book_date desc
+	</select>
+</mapper>

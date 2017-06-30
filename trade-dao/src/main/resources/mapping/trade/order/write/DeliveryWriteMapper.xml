@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.write.DeliveryWriteMapper">
+	
+	<sql id="delivery_column">
+		id,
+		order_id,
+		delivery_way,
+		express_company,
+		express_no,
+		create_time
+	</sql>
+
+	<!-- 保存订单配送信息 -->
+	<insert id="insertDeliveryDetail" parameterType="com.pzj.trade.order.entity.DeliveryDetailEntity">
+		insert into t_delivery_detail (
+			order_id,
+			delivery_way,
+			express_company,
+			express_no
+		) values (
+			#{orderID},
+			#{deliveryWay},
+			#{expressCompany},
+			#{expressNO}
+		)
+	</insert>
+	
+	<!-- 根据订单ID获取订单信息. -->
+	<select id="getDeliveryByOrderIdNolock" resultType="com.pzj.trade.order.entity.DeliveryDetailEntity">
+		select
+			order_id as orderID,
+			delivery_way as deliveryWay,
+			express_company as expressCompany,
+			express_no as expressNO
+		from
+			t_delivery_detail
+		where
+			 order_id =#{orderId}
+	</select>
+</mapper>

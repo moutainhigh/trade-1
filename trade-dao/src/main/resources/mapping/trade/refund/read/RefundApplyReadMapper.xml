@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.refund.read.RefundApplyReadMapper">
+
+	<!-- 获取销售订单的销售商品信息 -->
+	<select id="getMerchsByOrderId" resultType="com.pzj.core.trade.refund.entity.RefundMerchRequiredEntity" parameterType="java.lang.String">
+		select
+			merch_id as merchId,
+			root_merch_id as rootMerchId,
+			merch_name as merchName,
+			order_id as orderId,
+			product_id as productId,
+			merch_state as merchState,
+			total_num as totalNum,
+			check_num as checkNum,
+			refund_num as refundNum,
+			refund_amount as refundAmount,
+			price as price,
+			voucher_id as voucherId,
+			is_refunding as isRefunding,
+			start_time as startTime,
+			expire_time as expireTime
+		from
+			t_order_merch
+		where
+			order_id = #{orderId}
+<!-- 		and
+			merch_id = root_merch_id -->
+	</select>
+	
+	<select id="pageQueryRefundApply"
+		parameterType="com.pzj.core.trade.refund.entity.RefundApplyQueryPageEntity"
+		resultType="java.lang.String">
+		select refund_id from t_refund_apply
+		<include refid="base_query_sql" />
+		<if test="apply.isPage">
+			<if test="apply.startIndex != null and apply.endIndex != null">
+				limit #{apply.startIndex},#{apply.endIndex}
+			</if>
+		</if>
+	</select>
+
+	<sql id="base_query_sql">
+		<where>
+			<trim prefixOverrides="and">
+				<if test="apply.orderId != null ">
+					refund_id in
+					(select distinct (refund_id) from
+					t_order_merchrefund_flow where order_id = #{apply.orderId})
+				</if>
+
+				<if test="apply.auditState != null ">
+					and refund_id in (
+					<!-- 财务未审核 -->
+					<if test="apply.auditState == 1">
+						select refund_id from t_refund_apply where
+						refund_audit_state = 2
+					</if>
+					<!-- 财务审核通过 -->
+					<if test="apply.auditState == 2">
+						select refund_id from t_refund_oper_log where prev = 2
+						and later = 9
+					</if>
+					<!-- 财务拒绝 -->
+					<if test="apply.auditState == 3">
+						select refund_id from t_refund_oper_log where prev = 2
+						and later = 7
+					</if>
+					)
+				</if>
+
+				<if test="apply.thirdAuditState != null ">
+					and refund_id in (
+					<!-- 对接审核中 -->
+					<if test="apply.thirdAuditState == 0">
+						select refund_id from t_refund_oper_log where
+						later = 8
+					</if>
+					<!-- 对接审核通过 -->
+					<if test="apply.thirdAuditState == 1">
+						select refund_id from t_refund_oper_log where prev=8
+						and later=9
+					</if>
+					<!-- 对接审核拒绝 -->
+					<if test="apply.thirdAuditState == 2">
+						select refund_id from t_refund_oper_log where prev=8
+						and later=7
+					</if>
+
+					<!-- 不需要对接审核拒绝 -->
+					<if test="apply.thirdAuditState == 3">
+						select refund_id from t_refund_oper_log where prev= 2
+						and later in (7,9)
+					</if>
+					)
+				</if>
+				<!-- 强制退款状态到财务审核时间 -->
+				<if test=" apply.startApplyDate != null and apply.endApplyDate != null ">
+					and refund_id in
+					(select refund_id from t_refund_oper_log
+					where
+					create_time between #{apply.startApplyDate} and
+					#{apply.endApplyDate} and
+					later =
+					2)
+				</if>
+				<!-- 财务审核时间查询 -->
+				<if test=" apply.startAuditDate != null and apply.endAuditDate != null ">
+					and refund_id in
+					(select refund_id from t_refund_oper_log
+					where
+					create_time between #{apply.startAuditDate} and
+					#{apply.endAuditDate} and
+					prev =
+					2)
+				</if>
+				<!-- 只筛选与财务有关的强制退款 -->
+				and refund_id in
+				(select distinct refund_id from t_refund_oper_log
+				where prev = 2 or later = 2
+				)
+			</trim>
+		</where>
+
+	</sql>
+
+	<select id="countRefundApply"
+		parameterType="com.pzj.core.trade.refund.entity.RefundApplyQueryPageEntity"
+		resultType="int">
+		select count(refund_id) from t_refund_apply
+		<include refid="base_query_sql" />
+	</select>
+
+
+	<sql id="column_list">
+		apply_id as applyId,
+		applier_id as applierId,
+		init_party as initParty,
+		refund_id as refundId,
+		transaction_id as transactionId,
+		is_party as isParty,
+		is_force as isForce,
+		refund_state as refundState,
+		refund_audit_state as refundAuditState,
+		create_time as createTime,
+		update_time as updateTime
+	</sql>
+
+	<select id="queryRefundApplyByRefundId" parameterType="java.lang.String"
+		resultType="com.pzj.core.trade.refund.entity.RefundApplyEntity">
+		select
+		<include refid="column_list" />
+		from
+		t_refund_apply
+		where refund_id = #{refundId}
+	</select>
+
+	<!-- 根据refundId查询退款申请 by guanluguang -->
+	<select id="queryRefundApplyByRefundIdByFlow" parameterType="java.lang.String" resultType="com.pzj.core.trade.refund.entity.RefundApplyEntity">
+		select
+		<include refid="column_list" />
+		from
+			t_refund_apply
+		where
+			refund_id = #{refundId}
+	</select>
+	
+	<!-- 根据订单ID查询退款申请 -->
+	<select id="queryRefundApplyByOrderId" parameterType="com.pzj.core.trade.refund.model.RefundApplyQueryModel" resultType="com.pzj.core.trade.refund.entity.RefundApplyEntity">
+		select
+		<include refid="column_list" />
+		from
+			t_refund_apply
+		where
+			transaction_id = #{orderId}
+		and
+			refund_state in
+		<foreach collection="refundStates" item="v_state" separator="," open="(" close=")">
+			#{v_state}
+		</foreach>
+	</select>
+
+	<select id="queryRefundingNumByMerchId" resultType="Integer">
+		select  IFNULL(SUM(f.refund_num),0)
+		from t_refund_apply a,t_order_merchrefund_flow f
+		where f.merch_id=#{merch_id}
+		and f.refund_id=a.refund_id
+		and a.refund_state=#{refund_state}
+	</select>
+</mapper>

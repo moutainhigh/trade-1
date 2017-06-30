@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration debug="false" scan="true">
+	<property name="log.path" value="../logs" />
+	<property name="enginee" value="交易" />
+
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+			<layout class="com.pzj.framework.logger.layout.LoggerPatternLayout">
+				<pattern>%d{HH:mm:ss.SSS} [${enginee}] %inet [%5p] [%C{0}.%M] ->%m%n
+				</pattern>
+			</layout>
+		</encoder>
+	</appender>
+
+	<appender name="trade-data" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="com.pzj.framework.logger.filter.ThresholdFilter">
+			<level>warn</level>
+			<rebel>true</rebel>
+		</filter>
+		<file>${log.path}/trade-data.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log.path}/%d{yyyyMMdd}_trade-data.log</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.pzj.framework.logger.layout.LoggerPatternLayout">
+                <pattern>%d{HH:mm:ss.SSS} [${enginee}] %inet [%5p] [%thread] [%C{0}.%M] -> %m%n</pattern>
+            </layout>
+        </encoder>
+	</appender>
+
+	<appender name="trade-error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="com.pzj.framework.logger.filter.ThresholdFilter" />
+		<file>${log.path}/trade-error.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log.path}/%d{yyyyMMdd}_trade-error.log</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.pzj.framework.logger.layout.LoggerPatternLayout">
+                <pattern>%d{HH:mm:ss.SSS} [${enginee}] %inet [%5p] [%thread] [%C{0}.%M] -> %m%n</pattern>
+            </layout>
+        </encoder>
+	</appender>
+
+	<logger name="com.pzj.trade" level="info" additivity="false">
+		<appender-ref ref="trade-data" />
+		<appender-ref ref="trade-error" />
+		<appender-ref ref="stdout" />
+	</logger>
+	<logger name="com.pzj.core.trade" level="info" additivity="false">
+		<appender-ref ref="trade-data" />
+		<appender-ref ref="trade-error" />
+		<appender-ref ref="stdout" />
+	</logger>
+
+	<logger name="com.pzj.orange.client" level="info">
+		<appender name="orange-client" class="ch.qos.logback.core.rolling.RollingFileAppender">
+			<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+				<fileNamePattern>${log.path}/callrecord/%d{yyyyMMdd}_trade-callrecord.log</fileNamePattern>
+			</rollingPolicy>
+			<encoder>
+				<pattern>%date [%thread] %-5level %logger{80} - %msg%n</pattern>
+			</encoder>
+		</appender>
+	</logger>
+	<logger name="org.springframework" level="warn" />
+	<logger name="com.alibaba" level="warn" />
+	<logger name="org.apache" level="debug" />
+	<logger name="org.I0Itec.zkclient" level="warn" />
+	
+	<root level="debug">
+		<appender-ref ref="stdout" />
+	</root>
+</configuration>

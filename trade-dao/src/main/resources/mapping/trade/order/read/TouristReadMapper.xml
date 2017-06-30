@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.TouristReadMapper">
+
+	<!-- 根据订单ID获取订单信息. -->
+	<select id="getUsedIdcarNo" resultType="String">
+		select
+			t.idcard
+		from
+			t_order o,t_order_merch m,t_order_tourist t
+		where
+			o.order_id=m.order_id
+			and t.merch_id=m.merch_id
+			<if test="idcardNos != null">
+			 	and t.idcard in 
+			 	<foreach collection="idcardNos" index="index" item="item" 
+			 	open="(" separator="," close=")">
+			 		#{item}
+			 	</foreach>
+			</if>
+			and m.supplier_id=#{supplierId}
+			and m.product_id=#{productId}
+			and o.order_status in (1,10,40)
+			<if test="playDate != null">
+    			<![CDATA[ and start_time <=#{playDate,jdbcType=TIMESTAMP} ]]>
+    			<![CDATA[ and expire_time >=#{playDate,jdbcType=TIMESTAMP} ]]>
+			</if>
+			
+	</select>
+	
+		<!-- 根据订单ID、商品id获取游客信息. -->
+	<select id="getByOrderMerchId" resultType="com.pzj.trade.order.entity.TouristEntity">
+		SELECT
+			tourist_id,
+			order_id,
+			merch_id,
+			name,
+			idcard,
+			mobile,
+			name_spell,
+			other,
+			create_time
+		FROM
+			t_order_tourist
+		WHERE
+			order_id =#{order_id}
+		AND merch_id =#{merch_id}
+					
+	</select>
+	
+</mapper>

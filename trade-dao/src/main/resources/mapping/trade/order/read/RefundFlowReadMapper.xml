@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.core.trade.refund.read.RefundFlowReadMapper">
+
+	<!-- 获取订单的退款信息 -->
+	<select id="getRefundFlows" resultType="com.pzj.trade.merch.entity.RefundFlowEntity">
+		select
+			flow_id,
+			refund_id,
+			order_id,
+			merch_id,
+			apply_merch_status,
+			refund_num,
+			refund_price,
+			refund_type,
+			create_time,
+			update_time,
+			refund_rule_type
+		from
+			t_order_merchrefund_flow
+		where
+			order_id=#{order_id}
+		<if test="merch_id != null">
+			and merch_id=#{merch_id}
+		</if>
+		and refund_type=#{refund_type}
+	</select>
+	
+		<!-- 获取订单的退款信息 -->
+	<select id="getRefundFlowsByOrderId" resultType="com.pzj.trade.merch.entity.RefundFlowEntity">
+		select
+			flow_id,
+			refund_id,
+			order_id,
+			merch_id,
+			apply_merch_status,
+			refund_num,
+			refund_price,
+			refund_type,
+			create_time,
+			update_time,
+			refund_rule_type
+		from
+			t_order_merchrefund_flow
+		where
+			order_id=#{order_id}
+		<if test="merch_id != null">
+			and merch_id=#{merch_id}
+		</if>
+	</select>
+	
+	
+	<!-- 根据退款单号查询对应的流水. -->
+	<select id="queryRefundFlowByRefundId" parameterType="java.lang.String" resultType="com.pzj.trade.merch.entity.RefundFlowEntity">
+		select
+		flow_id,
+			refund_id,
+			order_id,
+			merch_id,
+			apply_merch_status,
+			refund_num,
+			refund_price,
+			refund_type,
+			create_time,
+			update_time,
+			refund_rule_type
+		from
+			t_order_merchrefund_flow
+		where
+			refund_id = #{refund_id}
+	</select>
+	
+	<select id="getOrderRefundInfo" parameterType="java.lang.String"
+		resultType="com.pzj.trade.order.entity.OrderRefundEntity">
+		select
+		o.order_id AS orderId,
+		o.refund_id AS refundId,
+		o.merch_id AS merchId,
+		o.refund_num AS refundNum,
+		o.refund_price AS refundPrice,
+		a.create_time AS createTime,
+		a.update_time AS refundDate,
+		a.is_force AS isForce,
+		a.refund_state AS refundState
+		from t_order_merchrefund_flow o left join t_refund_apply a on o.refund_id=a.refund_id where o.refund_id=#{refundId} AND
+		a.refund_state != 3
+	</select>
+</mapper>

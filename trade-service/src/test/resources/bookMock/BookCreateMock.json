@@ -1,0 +1,53 @@
+{
+ "resellerId" :3694288211279872,
+ "operatorId":3121242274529281,
+ "travel":0,
+ "travelDepartId":0,
+ "guideId":0,
+ "travelDate":1488346614490,
+ "contactees":[
+   {
+     "contactee": "huxn",
+     "contactMobile": "47239473289",
+     "idcard_no" : "3279437543875843753"
+   }
+  ],
+  "filledModelList":[
+   {
+     "group": "contact",
+     "attr_key": "contact_mobile",
+     "attr_value": "15010258126"
+   }    
+  ],
+  "products":[
+   {
+     "productId": 813592458135965696,
+     "bugNum": 3,
+     "strategyRelationId": 844821581945025176,
+     "parentUserId" : 2216619736563787,
+     "subUserId" : 3694288211279872,
+     "seats":[1,2,3]
+   }
+  ],
+   "tourists": [
+        {
+            "idcardNo": "513326197810179036",
+            "productId": 4578648648654,
+            "remark": "",
+            "tourist": "鱼彤11",
+            "touristMobile": "",
+            "touristSpell": ""
+        },
+        {
+            "idcardNo": "411625197701239364",
+            "productId": 4578648648654,
+            "remark": "",
+            "tourist": "印芷雪111",
+            "touristMobile": "",
+            "touristSpell": ""
+        }
+    ],
+  "remark": null,
+  "spuId" : 814352297155596288
+  
+}

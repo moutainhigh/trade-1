@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.voucher.read.VoucherReadMapper">
+	<resultMap id="BaseResultMap" type="com.pzj.voucher.entity.VoucherEntity">
+		<id column="voucher_id" property="voucherId" jdbcType="BIGINT" />
+		<result column="voucher_content" property="voucherContent"
+			jdbcType="VARCHAR" />
+		<result column="voucher_content_type" property="voucherContentType"
+			jdbcType="TINYINT" />
+		<result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+		<result column="expire_time" property="expireTime" jdbcType="TIMESTAMP" />
+		<result column="show_start_time" property="showStartTime"
+			jdbcType="TIMESTAMP" />
+		<result column="show_end_time" property="showEndTime" jdbcType="TIMESTAMP" />
+		<result column="voucher_state" property="voucherState"
+			jdbcType="TINYINT" />
+		<result column="voucher_category" property="voucherCategory"
+			jdbcType="TINYINT" />
+		<result column="supplier_id" property="supplierId" jdbcType="BIGINT" />
+		<result column="transaction_id" property="transactionId"
+			jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="voucher_time" property="voucherTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		voucher_id, voucher_content, voucher_content_type,
+		start_time, expire_time, show_start_time,show_end_time,
+		voucher_state,voucher_category,supplier_id,
+		transaction_id, create_time,voucher_time
+	</sql>
+	
+	<sql id="Voucher_Column_List">
+		voucher_id as voucherId, voucher_content as voucherContent, voucher_content_type as voucherContentType,
+		start_time as startTime, expire_time as expireTime, show_start_time as showStartTime,show_end_time as showEndTime,
+		voucher_state as voucherState,voucher_category as voucherCategory,supplier_id as supplierId,
+		transaction_id as transactionId, create_time as createTime,voucher_time as voucherTime
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select
+		<include refid="Base_Column_List" />
+		from t_voucher_base
+		where voucher_id = #{voucherId,jdbcType=BIGINT}
+	</select>
+	
+	<select id="queryVoucherByTransactionId" resultType="com.pzj.voucher.entity.VoucherEntity">
+		select
+		<include refid="Voucher_Column_List" />
+		from t_voucher_base
+		where transaction_id = #{transactionId}
+	</select>
+
+	<!-- 根据供应商及核销码查询可用的凭证信息. -->
+	<select id="queryUsableVoucherBySupplierId" parameterType="com.pzj.core.trade.voucher.entity.BasicQueryModel" resultMap="BaseResultMap">
+		select
+			<include refid="Base_Column_List" />
+		from
+			t_voucher_base
+		where
+			supplier_id = #{supplier_id}
+		and
+			voucher_content = #{voucherContent}
+		and
+			voucher_state in (0, 1)
+		and
+			<![CDATA[ start_time <=#{start_time} ]]>
+		and
+    		<![CDATA[ expire_time >=#{start_time} ]]>
+	</select>
+
+	<select id="queryBaseVoucherByBaseVoucher" resultMap="BaseResultMap" parameterType="com.pzj.voucher.entity.VoucherEntity">
+		select
+		<include refid="Base_Column_List" />
+		from t_voucher_base
+		where 1=1
+		<if test="voucherIdList != null">
+			and voucher_id in
+			<foreach collection="voucherIdList" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="voucherId != null">
+			and voucher_id = #{voucherId,jdbcType=BIGINT}
+		</if>
+		<if test="voucherContent != null">
+			and voucher_content = #{voucherContent,jdbcType=VARCHAR}
+		</if>
+		<if test="voucherContentList != null">
+			and voucher_content in
+			<foreach collection="voucherContentList" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="voucherContentType != null">
+			and voucher_content_type =
+			#{voucherContentType,jdbcType=TINYINT}
+		</if>
+		<if test="voucherState != null">
+			and voucher_state = #{voucherState,jdbcType=TINYINT}
+		</if>
+		<if test="voucherCategory != null">
+			and voucher_category = #{voucherCategory,jdbcType=TINYINT}
+		</if>
+		<if test="supplierId != null">
+			and supplier_id = #{supplierId,jdbcType=BIGINT}
+		</if>
+		<if test="transactionId != null">
+			and transaction_id = #{transactionId,jdbcType=VARCHAR}
+		</if>
+		<if test="startTime != null">
+    		<![CDATA[ and start_time <=#{startTime,jdbcType=TIMESTAMP} ]]>
+    		<![CDATA[ and expire_time >=#{startTime,jdbcType=TIMESTAMP} ]]>
+		</if>
+		<if test="accurateStartTime != null">
+    		<![CDATA[ and start_time >=#{accurateStartTime,jdbcType=TIMESTAMP} ]]>
+		</if>
+		<if test="accurateEndTime != null">
+    		<![CDATA[ and start_time <=#{accurateEndTime,jdbcType=TIMESTAMP} ]]>
+		</if>
+	</select>
+
+	<!-- 根据凭证检索对应的Voucher信息. 此处是否应该加入Voucher状态的过滤以便于缩小范围呢? -->
+	<select id="queryVoucherByContent" resultType="Long">
+		select
+		voucher_id
+		from
+		t_voucher_base
+		where
+		voucher_content = #{vourContent}
+	</select>
+	<!-- 根据voucherId查询voucher基本属性 -->
+	<select id="queryVoucherBasicById"
+		resultType="com.pzj.core.trade.voucher.entity.VoucherBasicEntity">
+		select
+		voucher_id,
+		voucher_content,
+		voucher_content_type,
+		voucher_category
+		from
+		t_voucher_base
+		where
+		voucher_id = #{voucherId}
+	</select>
+</mapper>

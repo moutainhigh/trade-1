@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.write.OrderExtendAttrWriteMapper">
+
+	<insert id="insert">
+		<foreach collection="list" item="extend" index="index"
+			separator=";">
+			insert into t_order_extend_attr (
+			transaction_id,
+			order_id,
+			attr_group,
+			attr_key,
+			attr_value,
+			create_time
+			) values(
+			#{extend.transaction_id},
+			#{extend.order_id},
+			#{extend.attr_group},
+			#{extend.attr_key},
+			#{extend.attr_value},
+			sysdate()
+			)
+		</foreach>
+	</insert>
+
+	<update id='updateByTransactionIdAndKey'>
+		<foreach collection="list" item="extend" index="index"
+			separator=";">
+			update t_order_extend_attr
+			set
+			attr_value=#{extend.attr_value},
+			create_time=sysdate()
+			where
+			transaction_id=#{extend.transaction_id}
+			and
+			attr_group=#{extend.attr_group}
+			and attr_key=#{extend.attr_key}
+		</foreach>
+
+	</update>
+</mapper>

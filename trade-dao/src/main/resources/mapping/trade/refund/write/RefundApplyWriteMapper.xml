@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.refund.write.RefundApplyWriteMapper">
+	<sql id="refundApplyColumn">
+		apply_id as applyId,
+		refund_id as refundId,
+		applier_id as applierId,
+		transaction_id as transactionId,
+		init_party as initParty,
+		is_party as isParty,
+		is_force as isForce,
+		refund_state as refundState,
+		refund_audit_state as refundAuditState,
+		create_time as createTime,
+		update_time as updateTime
+	</sql>
+	<!-- 新增退款申请记录 -->
+	<insert id="addRefundApply"
+		parameterType="com.pzj.core.trade.refund.entity.RefundApplyEntity">
+		insert into t_refund_apply
+		(
+		refund_id,
+		transaction_id,
+		apply_sale_order_status,
+		applier_id,
+		init_party,
+		is_party,
+		is_force,
+		refund_state,
+		refund_audit_state,
+		create_time
+		) values(
+		#{refundId},
+		#{transactionId},
+		#{applySaleOrderStatus},
+		#{applierId},
+		#{initParty},
+		#{isParty},
+		#{isForce},
+		#{refundState},
+		#{refundAuditState},
+		sysdate()
+		)
+	</insert>
+
+	<!-- 更新退款流水相关状态 -->
+	<update id="updateRefundApplyRelationStatue">
+		update t_refund_apply
+		<set>
+			<if test="auditState!=null">
+				refund_audit_state=#{auditState},
+			</if>
+			<if test="refundState!=null">
+				refund_state=#{refundState},
+			</if>
+			update_time=sysdate()
+		</set>
+		where refund_id=#{refundId}
+	</update>
+
+	<select id="getRefundApplyEntityByRefundId"
+		resultType="com.pzj.core.trade.refund.entity.RefundApplyEntity">
+		select
+		<include refid="refundApplyColumn" />
+		from t_refund_apply
+		where refund_id=#{refundId}
+	</select>
+</mapper>

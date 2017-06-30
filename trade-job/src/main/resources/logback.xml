@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration debug="false" scan="true">
+	<property name="log.path" value="../logs" />
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss} [%5p] %C{0}.%M - %m%n</pattern>
+		</encoder>
+	</appender>
+	<appender name="trade-job-data" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="com.pzj.framework.logger.filter.ThresholdFilter">
+			<level>warn</level>
+			<rebel>true</rebel>
+		</filter>
+		<file>${log.path}/trade-job-data.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log.path}/trade-job-data.log.%d{yyyyMMdd}</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss} [%-5p] [%t] %C{0}.%M - %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="trade-job-error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="com.pzj.framework.logger.filter.ThresholdFilter" />
+		<file>${log.path}/trade-job-error.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log.path}/trade-job-error.log.%d{yyyyMMdd}</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss} [%-5p] [%t] %C{0}.%M - %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="com.pzj" level="info" additivity="false">
+		<appender-ref ref="trade-job-data" />
+		<appender-ref ref="trade-job-error" />
+		<appender-ref ref="stdout" />
+	</logger>
+
+	<logger name="org.springframework" level="warn" />
+	<logger name="com.alibaba" level="warn" />
+	<logger name="org.apache" level="warn" />
+	<logger name="org.I0Itec.zkclient" level="warn" />
+
+	<root level="info">
+		<appender-ref ref="stdout" />
+	</root>
+</configuration>

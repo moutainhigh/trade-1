@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.merch.write.MerchRefundFlowWriteMapper">
+
+	<!-- 根据订单号及商品退款状态获取到对应的退款记录. -->
+	<select id="getRefundAuditingMerchCount" resultType="int">
+		select
+		count(a.refund_id)
+		from t_refund_apply a left join 
+		t_order_merchrefund_flow m on a.refund_id = m.refund_id
+		where
+		m.order_id = #{orderId}
+		and
+		a.refund_state = #{refundState}
+	</select>
+
+	<select id="getRefundAuditingOfMerch" resultType="int">
+		select
+		count(a.refund_id)
+		from t_refund_apply a left join  
+		t_order_merchrefund_flow m on a.refund_id=m.refund_id
+		where
+		m.order_id = #{orderId}
+		and
+		m.merch_id=#{merchId}
+		and
+		a.refund_state = #{refundState}
+	</select>
+	<!-- 根据指定的商品列表及审核状态值找出对应的审核记录 -->
+	<select id="getRefundMerchByState" resultType="com.pzj.trade.merch.entity.MerchRefundEntity">
+		select
+		f.refund_id,
+		f.order_id,
+		f.merch_id,
+		a.refund_state
+		from
+		t_order_merchrefund_flow f left join on t_refund_apply a on f.refund_id = a.refund_id
+		where
+		f.merch_id in
+		<foreach collection="merchIds" item="m_id" separator="," open="("
+			close=")">
+			#{m_id}
+		</foreach>
+		and
+		a.refund_state = #{state}
+	</select>
+
+	<select id="getOrderMerchRefund" resultType="com.pzj.trade.merch.entity.RefundFlowEntity">
+		select f.flow_id
+		,f.refund_id
+		,f.order_id
+		,f.merch_id
+		,f.apply_merch_status
+		,refund_rule_type
+		,f.refund_type
+		,f.refund_num
+		,f.refund_price
+		from t_order_merchrefund_flow f left join  t_refund_apply a on f.refund_id = a.refund_id  
+		where a.refund_id=#{refundId}
+		<if test="orderId !=null">
+			and f.order_id=#{orderId}
+		</if>
+	</select>
+
+	<select id="getLastRefundOrderMerch" resultType="java.util.Date">
+		select create_time  from t_order_merchrefund_flow
+		where merch_id=#{merchId} order by create_time desc limit 1
+	</select>
+
+	<update id="updateOrderMerchRefundFlowStatus">
+		update t_order_merchrefund_flow
+		set refund_state=#{refundState},
+		update_time=sysdate()
+		where refund_id=#{refundId}
+	</update>
+
+	<update id="updateMerchRefundApplyAuditStatue">
+		update t_order_merchrefund_flow
+		set refund_audit_state=#{auditState}
+		where refund_id=#{refundId}
+	</update>
+	
+	<select id="getMerchRefundEntityOfMerch" resultType="com.pzj.trade.merch.entity.RefundFlowEntity">
+		select
+		flow_id,
+		refund_id,
+		order_id,
+		merch_id,
+		apply_merch_status,
+		refund_num,
+		refund_price,
+		refund_state,
+		refund_type
+		from t_order_merchrefund_flow
+		where merch_id=#{merchId} and refund_id=#{refundId}
+	</select>
+
+	<insert id="insertOrderMerchRefundFlow" parameterType="com.pzj.trade.merch.entity.RefundFlowEntity">
+		insert into t_order_merchrefund_flow(
+			refund_id,
+			order_id,
+			merch_id,
+			apply_merch_status,
+			refund_type,
+			refund_rule_type,
+			refund_num,
+			refund_price,
+			create_time,
+			update_time
+		)	values
+		<foreach collection="refundMerchList" item="rm" index="index"
+			separator=",">
+			(
+				#{rm.refund_id},
+				#{rm.order_id},
+				#{rm.merch_id},
+				#{rm.apply_merch_status},
+				#{rm.refund_type},
+				#{rm.refund_rule_type},
+				#{rm.refund_num},
+				#{rm.refund_price},
+				#{rm.create_time},
+				sysdate()
+			)
+		</foreach>
+	</insert>
+
+	<select id="queryRefundFlowsByRefundId" resultType="com.pzj.trade.merch.entity.RefundFlowEntity">
+		select
+		flow_id
+		,refund_id
+		,order_id
+		,merch_id
+		,apply_merch_status
+		,refund_num
+		,refund_price
+		,refund_type
+		from t_order_merchrefund_flow
+		where refund_id=#{refundId}
+	</select>
+
+	<select id="queryOrderIdByRefundId" resultType="java.lang.String">
+		select order_id from t_order_merchrefund_flow where refund_id=#{refundId} and refund_type=#{refundType}
+		limit 1
+	</select>
+</mapper>

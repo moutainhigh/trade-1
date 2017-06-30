@@ -1,0 +1,6 @@
+{
+  "name" : "trade",
+  "version": "1.0.0",
+  "title": "交易saas二期下单接口", // 浏览器标题
+  "description": "交易saas二期下单接口"
+}

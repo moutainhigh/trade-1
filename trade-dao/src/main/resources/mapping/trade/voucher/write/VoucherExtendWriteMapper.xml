@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.voucher.write.VoucherExtendWriteMapper">
+
+  <update id="updateByPrimaryKey" parameterType="com.pzj.voucher.entity.ExtendVoucher" >
+    update t_voucher_extend
+    set voucher_id = #{voucherId,jdbcType=BIGINT},
+      supplier_id = #{supplierId,jdbcType=BIGINT},
+      voucher_attr = #{voucherAttr,jdbcType=VARCHAR},
+      voucher_attr_content = #{voucherAttrContent,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  
+  <insert id="batchInsertExtendVoucher" parameterType="java.util.List">
+	  insert into t_voucher_extend (voucher_id, supplier_id, voucher_attr, 
+	   voucher_attr_content)
+      values 
+	  <foreach collection="list"  item="item" separator=",">
+		(
+		#{item.voucherId,jdbcType=BIGINT}, 
+      	#{item.supplierId,jdbcType=BIGINT}, 
+      	#{item.voucherAttr,jdbcType=VARCHAR}, 
+      	#{item.voucherAttrContent,jdbcType=VARCHAR} 
+      	)		
+      </foreach>
+  </insert>
+  
+  <!-- 获取凭证对应的所有扩展信息. -->
+  <select id="queryExtendsByVoucherId" resultType="com.pzj.core.trade.voucher.entity.ExtendVoucherEntity">
+		select
+			id,
+			voucher_id,
+			supplier_id,
+			voucher_attr,
+			voucher_attr_content
+		from
+			t_voucher_extend
+		where
+			voucher_id = #{voucher_id}
+	</select>
+	
+	<!-- 获取凭证对应的制定属性Key的扩展信息. -->
+  <select id="queryExtendsByVoucherIdAndAttribuate" resultType="com.pzj.core.trade.voucher.entity.ExtendVoucherEntity">
+		select
+			id,
+			voucher_id,
+			supplier_id,
+			voucher_attr,
+			voucher_attr_content
+		from
+			t_voucher_extend
+		where
+			voucher_id = #{voucher_id}
+		and
+			voucher_attr = #{voucher_attr}
+	</select>
+
+</mapper>

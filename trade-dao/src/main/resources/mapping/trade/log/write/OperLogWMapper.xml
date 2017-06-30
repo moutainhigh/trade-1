@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.log.dao.write.OperLogWMapper">
+
+<!-- 所有字段 -->
+	<sql id="Base_Column_List">
+     log_id 
+	,order_id 
+	,operator 
+	,prev 
+	,next 
+	,event 
+	,context 
+	,create_time 
+	</sql>
+	
+	<!-- 插入 -->
+	<insert id="insert" parameterType="com.pzj.core.trade.log.dao.entity.OperLogEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into t_oper_log 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			  <include refid="Base_Column_List" />
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			    #{logId,jdbcType=BIGINT}
+		   <choose>  
+				<when test="orderId != null">,#{orderId ,jdbcType=VARCHAR}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="operator != null">,#{operator ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="prev != null">,#{prev ,jdbcType=SMALLINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="next != null">,#{next ,jdbcType=SMALLINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="event != null">,#{event ,jdbcType=VARCHAR}</when>
+				<otherwise>,''</otherwise>
+			</choose>
+			<choose>  
+				<when test="context != null">,#{context ,jdbcType=LONGVARCHAR}</when>
+				<otherwise>,''</otherwise>
+			</choose>
+			<choose>  
+				<when test="createTime != null">,#{createTime ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose> 	    		    
+			    
+		</trim>
+	</insert>
+	
+<!-- 批量插入 请根据业务修改默认值-->	
+    <insert id="insertBatch"  parameterType="java.util.List">
+		insert into t_oper_log 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			  <include refid="Base_Column_List" />
+		</trim>
+		values
+		<foreach collection="list" item="item" separator=",">
+		(#{item.logId,jdbcType=BIGINT}  
+			<choose>  
+				<when test="item.orderId != null">,#{item.orderId ,jdbcType=VARCHAR}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.operator != null">,#{item.operator ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.prev != null">,#{item.prev ,jdbcType=SMALLINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.next != null">,#{item.next ,jdbcType=SMALLINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.event != null">,#{item.event ,jdbcType=VARCHAR}</when>
+				<otherwise>,''</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.context != null">,#{item.context ,jdbcType=LONGVARCHAR}</when>
+				<otherwise>,''</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.createTime != null">,#{item.createTime ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose> 
+		)
+		</foreach>
+	</insert>
+</mapper>

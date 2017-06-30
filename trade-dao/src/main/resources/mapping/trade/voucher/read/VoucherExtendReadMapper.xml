@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.voucher.read.VoucherExtendReadMapper">
+
+	<resultMap id="BaseResultMap" type="com.pzj.voucher.entity.ExtendVoucher">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="voucher_id" property="voucherId" jdbcType="BIGINT" />
+		<result column="supplier_id" property="supplierId" jdbcType="BIGINT" />
+		<result column="voucher_attr" property="voucherAttr" jdbcType="VARCHAR" />
+		<result column="voucher_attr_content" property="voucherAttrContent"
+			jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, voucher_id, supplier_id, voucher_attr, voucher_attr_content
+	</sql>
+
+	<select id="queryExtendVoucherListByVoucherId" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select
+		<include refid="Base_Column_List" />
+		from t_voucher_extend
+		<where>
+			voucher_id = #{voucherId, jdbcType=BIGINT}
+		</where>
+	</select>
+	
+	<select id="queryExtendVoucherListByParam" resultMap="BaseResultMap">
+		select
+			<include refid="Base_Column_List" />
+		from t_voucher_extend
+		<where>
+			1=1
+			<if test="voucherId != null">
+			   and voucher_id = #{voucherId, jdbcType=BIGINT}
+			</if>
+			<if test="supplierId != null">
+				and supplier_id = #{supplierId, jdbcType=BIGINT}
+			</if>
+			<if test="voucherAttr != null">
+				and voucher_attr = #{voucherAttr, jdbcType=VARCHAR}
+			</if>
+			<if test="voucherAttrContent != null">
+				and voucher_attr_content = #{voucherAttrContent, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryListByParam" resultMap="BaseResultMap">
+		select
+			<include refid="Base_Column_List" />
+		from t_voucher_extend
+		<where>
+			<if test="voucherIds != null and voucherIds.size()>0">
+				and voucher_id in
+				<foreach collection="voucherIds" item="v_id"
+					separator="," open="(" close=")">
+					#{v_id}
+				</foreach>
+			</if>
+			<if test="voucherAttr != null">
+				and voucher_attr = #{voucherAttr, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+</mapper>

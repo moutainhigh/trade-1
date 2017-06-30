@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.write.OrderWriteMapper">
+
+	<sql id="orderinf_column">
+		order_id,
+		transaction_id,
+		p_order_id,
+		is_direct,
+		online_pay,
+		is_dock,
+		payer_id,
+		operator_id,
+		supplier_id,
+		reseller_id,
+		travel,
+		travel_depart_id,
+		guide_id,
+		need_confirm,
+		order_status,
+		total_amount,
+		refund_amount,
+		total_num,
+		checked_num,
+		refund_num,
+		order_type,
+		sale_port,
+		create_time,
+		pay_time,
+		pay_way,
+		pay_state,
+		third_code,
+		third_pay_type,
+		confirm_time,
+		contactee,
+		contact_mobile,
+		version,
+		order_level
+	</sql>
+
+	<!-- ~~~~~~~~~~~~~~~~~~~ select ~~~~~~~~~~~~~~~~~~~ -->
+
+	<!-- 根据订单ID查询详细的订单信息. -->
+	<select id="getOrderEntityForUpdate" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select
+		<include refid="orderinf_column" />
+		from
+		t_order
+		where
+		order_id = #{order_id}
+		for update
+	</select>
+
+	<select id="getOrderNumEntityForUpdate" resultType="com.pzj.trade.order.entity.OrderNumEntity">
+		select
+		order_id as orderId,
+		total_num as totalNum,
+		checked_num as checkNum,
+		refund_num as refundNum
+		from
+		t_order
+		where
+		order_id = #{order_id}
+		for update
+	</select>
+
+	<select id="getOrderInfoForRefundAuditLock" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select
+		order_id,
+		transaction_id,
+		p_order_id,
+		payer_id,
+		supplier_id,
+		reseller_id,
+		total_amount,
+		refund_amount,
+		total_num,
+		checked_num,
+		refund_num,
+		order_type,
+		online_pay,
+		sale_port,
+		is_dock,
+		third_pay_type
+		from
+		t_order
+		where
+		order_id = #{orderId}
+		for update
+	</select>
+
+
+	<select id="getOrderListByIds" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select
+		<include refid="orderinf_column" />
+		from
+		t_order
+		where
+		order_id in
+		<foreach collection="orderIds" item="v_id" separator="," open="("
+			close=")">
+			#{v_id}
+		</foreach>
+	</select>
+
+	<select id="getOrderEntityNotLock" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select
+		<include refid="orderinf_column" />
+		from
+		t_order
+		where
+		order_id = #{order_id}
+	</select>
+	
+	<select id="getInitialSupplierOrderByTransactionId" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select
+		<include refid="orderinf_column" />
+		from t_order
+		where transaction_id=#{transactionId}
+		order by order_level asc
+		limit 1
+	</select>
+
+	<select id="getOrderListByPorderId" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select
+		<include refid="orderinf_column" />
+		from
+		t_order
+		where
+		p_order_id = #{p_order_id}
+		and
+		p_order_id != order_id
+	</select>
+
+	<!-- 根据交易ID查询所有的子订单. -->
+	<select id="queryAllChildOrdersByTransactionId" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select
+		<include refid="orderinf_column" />
+		from
+		t_order
+		where
+		transaction_id = #{transaction_id}
+		and
+		order_id != transaction_id
+	</select>
+
+	<!-- 根据订单号查询在供应商系统对应的订单号 -->
+	<select id="queryAgentOrderByOrderId" resultType="com.pzj.trade.order.entity.AgentOrderEntity">
+		select
+		order_id,
+		agent_order_id,
+		operator_id,
+		create_time,
+		update_time
+		from
+		t_agent_order
+		where
+		order_id = #{order_id}
+		limit 1
+	</select>
+	
+	<select id="getOrderRefundModel" resultType="com.pzj.trade.order.model.OrderRefundModel">
+		select 
+			m.order_id as orderId, 
+			f.refund_id as refundId, 
+			sum(m.total_num) as totalNum,
+			sum(f.refund_num) as refundApplyNum,
+			sum(m.check_num) as checkNum, 
+			sum(m.refund_num) as refundNum, 
+			sum(m.refunding_num) as refundingNum, 
+			sum(m.refund_amount) as refundAmount 
+		from t_order_merch m 
+			left join (select * from t_order_merchrefund_flow  where refund_id=#{refundId})  f
+			on f.merch_id=m.merch_id
+		where m.order_id=#{saleOrderId}
+	</select>
+
+	<!-- 根据子订单ID查询其下级订单ID. -->
+	<select id="getParentOrderByChildId" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select
+			<include refid="orderinf_column" />
+		from
+			t_order
+		where
+			order_id = (
+				select p_order_id from t_order where order_id = #{order_id}
+			) 
+	</select>
+
+	<!-- ~~~~~~~~~~~~~~~~~~~ insert, update ~~~~~~~~~~~~~~~~~~~ -->
+
+	<update id="updateOrderNumForConsumeRollback">
+		update
+		t_order
+		set checked_num=total_num-refund_num
+		update_time = sysdate()
+		where
+		transaction_id = #{transactionId}
+	</update>
+	<!-- 通过订单ID更新订单状态 -->
+	<update id="updateOrderStatusByOrderId">
+		update
+			t_order
+		set
+			order_status = #{order_status},
+			confirm_time=sysdate()
+		where
+			transaction_id = #{order_id}
+	</update>
+	<!-- 通过交易ID更新订单状态 -->
+	<update id="updateOrderStatusByTransactionId">
+		update
+			t_order
+		set
+			order_status = #{order_status}
+			<if test="order_status==20">
+				,pay_state=0
+			</if>
+		where
+			transaction_id = #{transaction_id}
+	</update>
+
+
+	<update id="updateSaleOrderPayway">
+		update 
+			t_order
+		set pay_way=#{payWay}
+			<if test="thirdCode!=null">
+			,third_pay_type=#{thirdPayType}
+			,third_code=#{thirdCode}
+			</if>
+		where order_id=#{saleOrderId}
+	</update>
+	<!-- 更新支付时间和第三方支付信息. -->
+	<update id="updateOrderPayState">
+		update
+			t_order
+		set
+		<if test="third_code !=null">
+			third_code = #{third_code},
+		</if>
+		<if test="pay_state==2">
+			pay_time = #{pay_time},
+		</if>
+			third_pay_type = #{third_pay_type},
+			pay_way = #{pay_way},
+			pay_state = #{pay_state}
+		where
+			order_id = #{order_id}
+	</update>
+	
+	<update id="updateChildOrderMakeUpPayTime">
+		update
+			t_order
+		set 
+			pay_time = #{paytime},
+			pay_state=1
+		where 
+			order_id=#{childOrderId}
+	</update>
+	
+	<!-- 更新订单支付状态. -->
+	<update id="updateOrderStatusForPay">
+		update
+			t_order
+		set
+			order_status = 10,
+			pay_time = now(),
+			pay_state = 2
+		where
+			order_id = #{order_id}
+	</update>
+
+	<!-- 保存订单信息. -->
+	<insert id="insert" parameterType="com.pzj.trade.order.entity.OrderEntity">
+		insert into t_order (
+		order_id,
+		transaction_id,
+		p_order_id,
+		agent_flag,
+		payer_id,
+		operator_id,
+		supplier_id,
+		reseller_id,
+		travel,
+		travel_depart_id,
+		guide_id,
+		need_confirm,
+		order_status,
+		total_amount,
+		refund_amount,
+		total_num,
+		checked_num,
+		refund_num,
+		order_type,
+		sale_port,
+		create_time,
+		cancel_time,
+		contactee,
+		contact_mobile,
+		idcard_no,
+		settlement_price,
+		is_direct,
+		online_pay,
+		is_dock
+		)values
+		<foreach collection="orders" item="order" index="index"
+			separator=",">
+			(
+			#{order.order_id},
+			#{order.transaction_id},
+			#{order.p_order_id},
+			#{order.agent_flag},
+			#{order.payer_id},
+			#{order.operator_id},
+			#{order.supplier_id},
+			#{order.reseller_id},
+			#{order.travel},
+			#{order.travel_depart_id},
+			#{order.guide_id},
+			#{order.confirm},
+			#{order.order_status},
+			#{order.total_amount},
+			#{order.refund_amount},
+			#{order.total_num},
+			#{order.checked_num},
+			#{order.refund_num},
+			#{order.order_type},
+			#{order.sale_port},
+			sysdate(),
+			DATE_ADD(sysdate(),INTERVAL #{order.cancelMinute} MINUTE),
+			#{order.contactee},
+			#{order.contact_mobile},
+			#{order.idcard_no},
+			#{order.settlement_price},
+			#{order.is_direct},
+			#{order.online_pay},
+			#{order.is_dock}
+			)
+		</foreach>
+	</insert>
+	<!-- 保存多级订单信息. -->
+	<insert id="insertMultiOrder" parameterType="com.pzj.trade.order.entity.TradingOrderEntity">
+		insert into t_order (
+		order_id,
+		transaction_id,
+		p_order_id,
+		order_level,
+		order_source,
+		ticket_office_id,
+		payer_id,
+		operator_id,
+		supplier_id,
+		reseller_id,
+		travel,
+		travel_depart_id,
+		depart,
+		guide_id,
+		guider,
+		need_confirm,
+		order_status,
+		total_amount,
+		total_num,
+		sale_port,
+		create_time,
+		cancel_time,
+		contactee,
+		contact_mobile,
+		idcard_no,
+		is_dock,
+		pay_way,
+		version
+		)values
+		<foreach collection="orders" item="order" index="index"
+			separator=",">
+			(
+			#{order.order_id},
+			#{order.transaction_id},
+			#{order.p_order_id},
+			#{order.order_level},
+			#{order.order_source},
+			#{order.ticket_office_id},
+			#{order.payer_id},
+			#{order.operator_id},
+			#{order.supplier_id},
+			#{order.reseller_id},
+			#{order.travel},
+			#{order.travel_depart_id},
+			#{order.depart},
+			#{order.guide_id},
+			#{order.guider},
+			#{order.confirm},
+			#{order.order_status},
+			#{order.total_amount},
+			#{order.total_num},
+			#{order.sale_port},
+			sysdate(),
+			DATE_ADD(sysdate(),INTERVAL #{order.cancelMinute} MINUTE),
+			#{order.contactee},
+			#{order.contact_mobile},
+			#{order.idcard_no},
+			#{order.is_dock},
+			#{order.pay_way},
+			#{order.version}
+			)
+		</foreach>
+	</insert>
+	<!-- 保存订单备注信息. -->
+	<insert id="insertOrderRemark" parameterType="com.pzj.trade.order.entity.RemarkEntity">
+		insert into
+		t_order_remarks (
+		order_id,
+		remark,
+		operator_type,
+		operator_id,
+		operator_name,
+		create_time
+		)values(
+		#{order_id},
+		#{remark},
+		#{operator_type},
+		#{operator_id},
+		#{operator_name},
+		sysdate()
+		)
+	</insert>
+
+	<!-- 保存订单备注信息. -->
+	<insert id="insertOrderRemarks" parameterType="com.pzj.trade.order.entity.RemarkEntity">
+		insert into
+		t_order_remarks (
+		order_id,
+		remark,
+		operator_type,
+		operator_id,
+		operator_name,
+		create_time
+		)values
+		<foreach collection="remarks" index="index" item="item"
+			separator=",">
+			(
+			#{item.order_id},
+			#{item.remark},
+			#{item.operator_type},
+			#{item.operator_id},
+			#{item.operator_name},
+			sysdate()
+			)
+		</foreach>
+
+	</insert>
+
+	<!-- 更新订单二次确认字段. -->
+	<update id="updateOrderToConfirmedByTransactionId">
+		update
+		t_order
+		set
+		need_confirm = #{ack},
+		twice_confirm_time= sysdate()
+		where
+		transaction_id = #{transactionId}
+	</update>
+
+	<update id="updateOrderOfRefund">
+		<foreach collection="orderModels" item="order" index="index"
+			separator=";">
+			update t_order
+			set refund_amount = #{order.refundAmount},
+			<if test="order.orderStatus==30">
+				confirm_time=sysdate(),
+			</if>
+			refund_num = #{order.refundNum},
+			checked_num=#{order.checkNum},
+			order_status=#{order.orderStatus}
+			where order_id=#{order.orderId}
+		</foreach>
+	</update>
+	<update id="updateOrderStatusOfRefundFinish">
+		<if test="isRefunded">
+			update t_order set
+				order_status=30,
+				confirm_time=sysdate()
+			where transaction_id=#{transactionId}
+				and checked_num=0
+		</if>
+		<if test="!isRefunded">
+			update t_order set
+				order_status=40,
+				confirm_time=sysdate()
+			where transaction_id=#{transactionId}
+				and checked_num>0;
+		</if>
+	</update>
+	
+	<!-- 更新订单退款数量、核销数量、退款金额信息. -->
+	<select id="updateOrderRefundAmountAndNum" parameterType="com.pzj.trade.order.entity.OrderRefundEditModel">
+		update
+		t_order
+		set
+		refund_amount = #{refundAmount},
+		refund_num = #{refundNum},
+		checked_num=#{checkNum}
+		update
+		where
+		order_id=#{orderId}
+	</select>
+
+	<!-- 更新代下单的第三方订单号 -->
+	<update id="updateAgentOrderFlagByOrderId">
+		update t_order
+		set agent_flag=#{agent_flag}
+		where
+		order_id=#{order_id}
+
+	</update>
+	<!-- 新增代下单的第三方订单号 -->
+	<insert id="insertAgentOrder">
+		insert into t_agent_order
+		(order_id,
+		agent_order_id,
+		operator_id,
+		operator_reason,
+		is_auto,
+		create_time,
+		update_time) values(
+		#{param.order_id},
+		#{param.agent_order_id},
+		#{param.operator_id},
+		#{param.operator_reason},
+		#{param.is_auto},
+		sysdate(),
+		sysdate()
+		)
+	</insert>
+	<!-- 更新代下单的第三方订单号 -->
+	<update id="updateAgentOrderByOrderId">
+		update
+		t_agent_order
+		set
+		agent_order_id =
+		#{agent_order_id},
+		update_time = sysdate()
+		where
+		order_id = #{order_id}
+	</update>
+	<update id="updateOrderOfConsumer">
+		<foreach collection="orders" item="order" index="index"
+			separator=";">
+			update t_order
+			set
+			checked_num=checked_num+#{order.checked_num},
+			settlement_price=settlement_price+#{order.settlement_price}
+			where
+			order_id=#{order.order_id}
+		</foreach>
+	</update>
+	<!-- 新订单核销完毕更新订单状态 @author DongChunfu -->
+	<update id="newOrderConfrimFinishUpdateData" parameterType="com.pzj.trade.order.entity.OrderEntity">
+			update t_order
+			set
+			checked_num=checked_num+#{order.checked_num}
+			,confirm_time=#{order.confirm_time}
+			<if test="order.order_status==40">
+				,order_status=40
+			</if>
+			where
+			transaction_id=#{order.transaction_id}
+	</update>
+	<!-- 查询退款需要的所有订单信息 -->
+	<select id="getOrderInfoForRefundById" resultType="com.pzj.trade.order.entity.OrderEntity"
+		parameterType="java.lang.String">
+		select
+		order_id,
+		transaction_id,
+		p_order_id,
+		payer_id,
+		operator_id,
+		reseller_id,
+		order_status,
+		total_amount,
+		refund_amount,
+		total_num,
+		checked_num,
+		refund_num,
+		order_type,
+		sale_port,
+		third_pay_type,
+		online_pay,
+		is_dock
+		from t_order
+		where order_id = #{orderId}
+	</select>
+
+	<select id="getPurchaseOrderInfoNotLock" resultType="com.pzj.trade.order.entity.PurchaseOrderEntity">
+		select
+		order_id as orderId,
+		supplier_id as supplierId
+		from
+		t_order
+		where
+		order_id
+		= #{purchaseOrderId}
+	</select>
+
+
+	<update id="updateOrderRemark" parameterType="com.pzj.trade.order.entity.RemarkEntity">
+		update t_order_remarks
+		set
+		remark=#{remark.remark}
+		where
+		order_id=#{remark.order_id}
+		and operator_type=#{remark.operator_type}
+	</update>
+</mapper>

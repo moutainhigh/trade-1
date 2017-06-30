@@ -1,0 +1,309 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.book.dao.write.BookWMapper">
+
+<!-- 所有字段 -->
+	<sql id="Base_Column_List">
+     book_id 
+	,src_book_id 
+	,transaction_id 
+	,operator_id 
+	,reseller_id 
+	,supplier_id
+	,travel_date 
+	,book_status 
+	,book_type 
+	,book_date 
+	,total_amount 
+	,total_num 
+	,delivery_code 
+	,book_detail 
+	,spu_id
+	,update_time
+	</sql>
+	
+	<!-- 插入 -->
+	<insert id="insert" parameterType="com.pzj.core.trade.book.dao.entity.BookEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into t_book 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+	      <include refid="Base_Column_List" />
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			    #{bookId,jdbcType=VARCHAR}    
+		    <choose>  
+				<when test="srcBookId != null">,#{srcBookId ,jdbcType=VARCHAR}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="transactionId != null">,#{transactionId ,jdbcType=VARCHAR}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="operatorId != null">,#{operatorId ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="resellerId != null">,#{resellerId ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="supplierId != null">,#{supplierId ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="travelDate != null">,#{travelDate ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="bookStatus != null">,#{bookStatus ,jdbcType=BIT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="bookType != null">,#{bookType ,jdbcType=BIT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="bookDate != null">,#{bookDate ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="totalAmount != null">,#{totalAmount ,jdbcType=INTEGER}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="totalNum != null">,#{totalNum ,jdbcType=INTEGER}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="deliveryCode != null">,#{deliveryCode ,jdbcType=VARCHAR}</when>
+				<otherwise>,''</otherwise>
+			</choose>
+			<choose>  
+				<when test="bookDetail != null">,#{bookDetail ,jdbcType=VARCHAR}</when>
+				<otherwise>,''</otherwise>
+			</choose>
+			<choose>  
+				<when test="spuId != null">,#{spuId ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="updateTime != null">,#{updateTime ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+		</trim>
+	</insert>
+	
+<!-- 批量插入 请根据业务修改默认值-->	
+    <insert id="insertBatch"  parameterType="java.util.List">
+		insert into t_book 
+		(
+		   <include refid="Base_Column_List" />
+		) 
+		values
+		<foreach collection="list" item="item" separator=",">
+		(#{item.bookId,jdbcType=VARCHAR}  
+			<choose>  
+				<when test="item.srcBookId != null">,#{item.srcBookId ,jdbcType=VARCHAR}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.transactionId != null">,#{item.transactionId ,jdbcType=VARCHAR}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.operatorId != null">,#{item.operatorId ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.resellerId != null">,#{item.resellerId ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.supplierId != null">,#{item.supplierId ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.travelDate != null">,#{item.travelDate ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.bookStatus != null">,#{item.bookStatus ,jdbcType=BIT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.bookType != null">,#{item.bookType ,jdbcType=BIT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.bookDate != null">,#{item.bookDate ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.totalAmount != null">,#{item.totalAmount ,jdbcType=INTEGER}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.totalNum != null">,#{item.totalNum ,jdbcType=INTEGER}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.deliveryCode != null">,#{item.deliveryCode ,jdbcType=VARCHAR}</when>
+				<otherwise>,''</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.bookDetail != null">,#{item.bookDetail ,jdbcType=VARCHAR}</when>
+				<otherwise>,''</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.spuId != null">,#{item.spuId ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+			<choose>  
+				<when test="item.updateTime != null">,#{item.updateTime ,jdbcType=BIGINT}</when>
+				<otherwise>,0</otherwise>
+			</choose>
+		)
+		</foreach>
+	</insert>
+
+<!-- 更新 -->
+	<update id="updateByPrimaryKey" parameterType="com.pzj.core.trade.book.dao.entity.BookEntity">
+		update t_book
+		<set>
+			<if test="srcBookId != null" >
+             src_book_id = #{srcBookId,jdbcType=VARCHAR},
+            </if>
+			<if test="transactionId != null" >
+             transaction_id = #{transactionId,jdbcType=VARCHAR},
+            </if>
+			<if test="operatorId != null" >
+             operator_id = #{operatorId,jdbcType=BIGINT},
+            </if>
+			<if test="resellerId != null" >
+             reseller_id = #{resellerId,jdbcType=BIGINT},
+            </if>
+            <if test="supplierId != null" >
+             supplier_id = #{supplierId,jdbcType=BIGINT},
+            </if>
+			<if test="travelDate != null" >
+             travel_date = #{travelDate,jdbcType=BIGINT},
+            </if>
+			<if test="bookStatus != null" >
+             book_status = #{bookStatus,jdbcType=BIT},
+            </if>
+			<if test="bookType != null" >
+             book_type = #{bookType,jdbcType=BIT},
+            </if>
+			<if test="bookDate != null" >
+             book_date = #{bookDate,jdbcType=BIGINT},
+            </if>
+			<if test="totalAmount != null" >
+             total_amount = #{totalAmount,jdbcType=INTEGER},
+            </if>
+			<if test="totalNum != null" >
+             total_num = #{totalNum,jdbcType=INTEGER},
+            </if>
+			<if test="deliveryCode != null" >
+             delivery_code = #{deliveryCode,jdbcType=VARCHAR},
+            </if>
+			<if test="bookDetail != null" >
+             book_detail = #{bookDetail,jdbcType=VARCHAR},
+            </if>
+            <if test="spuId != null" >
+             spu_id = #{spuId,jdbcType=BIGINT},
+            </if>
+            <if test="updateTime != null" >
+             update_time = #{updateTime,jdbcType=BIGINT},
+            </if>
+		</set>
+		where book_id = #{bookId,jdbcType=VARCHAR}
+	</update>
+	
+		<update id="updateAllByPrimaryKey" parameterType="com.pzj.core.trade.book.dao.entity.BookEntity">
+		update t_book
+		<set>	      
+     src_book_id = #{srcBookId,jdbcType=VARCHAR},        
+     transaction_id = #{transactionId,jdbcType=VARCHAR},        
+     operator_id = #{operatorId,jdbcType=BIGINT},        
+     reseller_id = #{resellerId,jdbcType=BIGINT}, 
+     supplier_id = #{supplierId,jdbcType=BIGINT},       
+     travel_date = #{travelDate,jdbcType=BIGINT},        
+     book_status = #{bookStatus,jdbcType=BIT},        
+     book_type = #{bookType,jdbcType=BIT},        
+     book_date = #{bookDate,jdbcType=BIGINT},        
+     total_amount = #{totalAmount,jdbcType=INTEGER},        
+     total_num = #{totalNum,jdbcType=INTEGER},        
+     delivery_code = #{deliveryCode,jdbcType=VARCHAR},            
+     book_detail = #{bookDetail,jdbcType=VARCHAR},        
+     spu_id = #{spuId,jdbcType=BIGINT},   
+     update_time = #{updateTime,jdbcType=BIGINT},       
+		</set>
+		where book_id = #{bookId,jdbcType=VARCHAR}
+	</update>
+	
+<!-- 批量更新 -->
+	<update id="updateBatchByPrimaryKey"  parameterType="java.util.List">
+	     <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+                update t_book 
+                <set>
+                  <if test="item.srcBookId != null" >
+                    src_book_id = #{item.srcBookId,jdbcType=VARCHAR},
+                  </if>
+                  <if test="item.transactionId != null" >
+                    transaction_id = #{item.transactionId,jdbcType=VARCHAR},
+                  </if>
+                  <if test="item.operatorId != null" >
+                    operator_id = #{item.operatorId,jdbcType=BIGINT},
+                  </if>
+                  <if test="item.resellerId != null" >
+                    reseller_id = #{item.resellerId,jdbcType=BIGINT},
+                  </if>
+                  <if test="item.supplierId != null" >
+                    supplier_id = #{item.supplierId,jdbcType=BIGINT},
+                  </if>
+                  <if test="item.travelDate != null" >
+                    travel_date = #{item.travelDate,jdbcType=BIGINT},
+                  </if>
+                  <if test="item.bookStatus != null" >
+                    book_status = #{item.bookStatus,jdbcType=BIT},
+                  </if>
+                  <if test="item.bookType != null" >
+                    book_type = #{item.bookType,jdbcType=BIT},
+                  </if>
+                  <if test="item.bookDate != null" >
+                    book_date = #{item.bookDate,jdbcType=BIGINT},
+                  </if>
+                  <if test="item.totalAmount != null" >
+                    total_amount = #{item.totalAmount,jdbcType=INTEGER},
+                  </if>
+                  <if test="item.totalNum != null" >
+                    total_num = #{item.totalNum,jdbcType=INTEGER},
+                  </if>
+                  <if test="item.deliveryCode != null" >
+                    delivery_code = #{item.deliveryCode,jdbcType=VARCHAR},
+                  </if>
+                  <if test="item.bookDetail != null" >
+                    book_detail = #{item.bookDetail,jdbcType=VARCHAR},
+                  </if>
+                   <if test="item.spuId != null" >
+                    spu_id = #{item.spuId,jdbcType=BIGINT},
+                  </if>
+                   <if test="item.updateTime != null" >
+                    update_time = #{item.updateTime,jdbcType=BIGINT},
+                  </if>
+                </set>
+                where book_id = #{item.bookId,jdbcType=VARCHAR}
+         </foreach>
+	</update>
+	
+	<!-- 删除 -->    
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from t_book where book_id = #{bookId,jdbcType=VARCHAR}
+    </delete>
+    
+    <update id="callBackByTransaction_id">
+    	update t_book
+    	set book_status=2
+    	where transaction_id=#{transaction_id}
+    </update>
+</mapper>

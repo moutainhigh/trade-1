@@ -1,0 +1,51 @@
+{
+  "bookId": "2184917052700012",
+  "bookType": 1,
+  "resellerId": 4118567497236480,
+  "operatorId": 4072055830478849,
+  "travelDate": 1495857600000,
+  "spuId": 865455839007420416,
+  "contactee": {
+    "contactee": "",
+    "contactMobile": ""
+  },
+  "filledModelList": [],
+  "tourists": [
+    {
+      "productId": 865463202804346880
+    },
+    {
+      "productId": 865463202804346880
+    },
+    {
+      "productId": 865463202804346881
+    },
+    {
+      "productId": 865463202804346881
+    }
+  ],
+  "products": [
+    {
+      "strategyRelationId": 868000500777431059,
+      "parentUserId": 4072055830478849,
+      "subUserId": 4118567497236480,
+      "productId": 865463202804346880,
+      "scenicId": 0,
+      "buyNum": 1,
+      "price": 0,
+      "screeningsId": 0,
+      "areaId": 0
+    },
+    {
+      "strategyRelationId": 868000500777431061,
+      "parentUserId": 4072055830478849,
+      "subUserId": 4118567497236480,
+      "productId": 865463202804346881,
+      "scenicId": 0,
+      "buyNum": 1,
+      "price": 0,
+      "screeningsId": 0,
+      "areaId": 0
+    }
+  ]
+}

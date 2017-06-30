@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.refund.read.RefundOperLogReadMapper">
+
+	<select id="queryByStatesNum" resultType="int">
+		select count(log_id) from t_refund_oper_log
+		where prev=#{prev} and later=#{later} and refund_id=#{refundId}
+	</select>
+	
+	
+	<select id="queryDateByStates" resultType="com.pzj.core.trade.refund.entity.RefundOperLog">
+		select 
+		create_time as createTime,
+		operator_id as operatorId
+		from t_refund_oper_log
+		where prev=#{prev} and later !=#{later} and refund_id=#{refundId}
+	</select>
+	
+	
+	<select id="queryApplyDate" resultType="java.util.Date">
+		select 
+		create_time as createTime
+		from t_refund_oper_log
+		where later =#{later} and refund_id=#{refundId}
+	</select>
+</mapper>

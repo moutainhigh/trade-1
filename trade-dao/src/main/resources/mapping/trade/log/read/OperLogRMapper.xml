@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.log.dao.read.OperLogRMapper">
+
+<!-- 所有字段 -->
+	<sql id="Base_Column_List">
+     log_id 
+	,order_id 
+	,operator 
+	,prev 
+	,next 
+	,event 
+	,context 
+	,create_time 
+	</sql>
+	
+<!-- 字段映射 -->
+	<resultMap id="BaseResultMap" type="com.pzj.core.trade.log.dao.entity.OperLogEntity">
+	     <id column="log_id" property="logId" jdbcType="BIGINT" />
+		<result column="order_id" jdbcType="VARCHAR" property="orderId" />
+		<result column="operator" jdbcType="BIGINT" property="operator" />
+		<result column="prev" jdbcType="SMALLINT" property="prev" />
+		<result column="next" jdbcType="SMALLINT" property="next" />
+		<result column="event" jdbcType="VARCHAR" property="event" />
+		<result column="context" jdbcType="LONGVARCHAR" property="context" />
+		<result column="create_time" jdbcType="BIGINT" property="createTime" />
+	</resultMap>
+
+
+<!-- 查询预约单的最后一次审核记录 -->	
+<select id="selectCurrentDrawLog" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		select 
+		<include refid="Base_Column_List" />
+		from t_oper_log
+		where order_id = #{bookId} and event in ('book_audit','book_refuse')
+		order by create_time desc
+		limit 0,1
+	</select>
+	
+	
+</mapper>

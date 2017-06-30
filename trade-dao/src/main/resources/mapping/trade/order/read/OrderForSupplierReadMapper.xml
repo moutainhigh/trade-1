@@ -1,0 +1,924 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.OrderForSupplierReadMapper">
+
+	<sql id="column_list">
+		order_id,
+		transaction_id,
+		p_order_id,
+		payer_id,
+		operator_id,
+		supplier_id,
+		reseller_id,
+		travel,
+		travel_depart_id,
+		guide_id,
+		need_confirm,
+		order_status,
+		total_amount,
+		refund_amount,
+		total_num,
+		checked_num,
+		refund_num,
+		order_type,
+		sale_port,
+		contactee,
+		contact_mobile,
+		idcard_no,
+		create_time,
+		pay_time,
+		third_code,
+		third_pay_type,
+		pay_way,
+		confirm_time,
+		settlement_price,
+		need_confirm,
+		agent_flag,
+		is_direct,
+		online_pay,
+		is_dock,
+		version,
+		ticket_office_id
+		
+	</sql>
+
+    <select id="querySupplierOrderCount" resultType="com.pzj.trade.order.entity.OrderCountEntity">
+select 
+    	count(distinct o.order_id) as order_num,
+    	sum(m.total_num) as merch_num,
+    	o.total_amount as amount
+    from
+      	t_order o, t_order_merch m
+    where
+		m.order_id = o.order_id
+        <if test="reseller_id &gt; 0 ">
+    	    and   o.reseller_id=#{reseller_id}
+    	</if>
+        <if test="channel_id &gt; 0 ">
+    	    and  m.channel_id=#{channel_id}
+    	</if>
+		<if test="order_id !=null">
+			and o.transaction_id=#{order_id}
+		</if>
+		<if test="supplier_id &gt; 0">
+			and o.supplier_id = #{supplier_id}
+		</if>
+		<if test="order_status &gt; 0">
+			and o.order_status = #{order_status}
+		</if>
+		and
+			o.order_type in (1,3)
+		and
+			m.merch_state &lt;&gt; -1
+		<if test="contactee !=null">
+			and o.contactee like CONCAT('%',#{contactee},'%')
+		</if>
+		<if test="contact_mobile !=null">
+			and o.contact_mobile = #{contact_mobile}
+		</if>
+		<if test="start_date != null">
+			<![CDATA[ and o.create_time >= date_format(#{start_date},'%Y-%m-%d 00:00:00')]]>
+		</if>
+		<if test="end_date != null">
+			<![CDATA[ and o.create_time <= date_format(#{end_date},'%Y-%m-%d 23:59:59')]]>
+		</if>
+		<if test="merch_state !=null">
+			and m.merch_state=#{merch_state}
+			and m.is_refunding=0
+		</if>
+		<if test="is_refunding !=null">
+				and m.is_refunding=#{is_refunding}
+		</if>
+		
+		<if test="merch_name !=null">
+			and m.merch_name like CONCAT('%',#{merch_name},'%')
+		</if>
+		
+		<if test="category &gt; 0">
+			and m.merch_type=#{category}
+		</if>
+		<!-- 	游玩开始时间，游玩结束时间  -->
+	    <if test="start_visit_time !=null">
+			<![CDATA[ and m.start_time >= date_format(#{start_visit_time},'%Y-%m-%d 00:00:00')]]>
+		</if>  
+		<if test="end_visit_time !=null">
+			<![CDATA[ and m.expire_time <= date_format(#{end_visit_time},'%Y-%m-%d 23:59:59')]]>
+		</if> 
+    </select>
+
+    <select id="queryOrderByCondition" resultType="com.pzj.trade.merch.entity.SupplierOrderListEntity">
+        select
+        o.order_id,
+        o.p_order_id,
+        o.order_status,
+        o.is_direct,
+        o.online_pay,
+        o.create_time,
+        o.total_amount,
+        o.contactee,
+        o.contact_mobile,
+        o.need_confirm,
+        o.reseller_id,
+        m.merch_id,
+        m.merch_name,
+        m.merch_type,
+        m.merch_state,
+        m.product_id,
+        m.is_refunding,
+        m.total_num,
+        m.check_num,
+        m.refund_num,
+        m.voucher_id,
+        m.start_time,
+        m.channel_id
+        from
+        	t_order as o
+		JOIN (
+			SELECT
+				o1.order_id 
+		    FROM
+			    t_order AS o1
+			    LEFT JOIN t_order_merch m1 ON o1.order_id = m1.order_id
+			   
+			<where>
+			    <if test="param.reseller_id &gt; 0 ">
+		    	    and   o1.reseller_id=#{param.reseller_id}
+		        </if>
+		        <if test="param.channel_id &gt; 0 ">
+		    	    and m1.channel_id=#{param.channel_id}
+		        </if>
+		        <if test="param.order_id !=null">
+	            	and o1.transaction_id=#{param.order_id}
+	            </if>
+	            <if test="param.supplier_id &gt; 0">
+	                and o1.supplier_id = #{param.supplier_id}
+	            </if>
+	            <if test="param.order_status &gt; 0">
+	                and o1.order_status = #{param.order_status}
+	            </if>
+	            and
+	            	o1.order_type in (1,3)
+	        	<if test="param.contactee !=null">
+	                and o1.contactee like CONCAT('%',#{param.contactee},'%')
+	            </if>
+	            <if test="param.contact_mobile !=null">
+	                and o1.contact_mobile = #{param.contact_mobile}
+	            </if>
+	            <if test="param.start_date != null">
+	                    <![CDATA[ and o1.create_time >= date_format(#{param.start_date},'%Y-%m-%d 00:00:00')]]>
+	            </if>
+	            <if test="param.end_date != null">
+	                    <![CDATA[ and o1.create_time <= date_format(#{param.end_date},'%Y-%m-%d 23:59:59')]]>
+	            </if>
+	            <if test="param.merch_state !=null">
+	                and m1.merch_state=#{param.merch_state}
+	                and m1.is_refunding=0
+	            </if>
+				
+
+				<if test="param.is_refunding !=null">
+						and m1.is_refunding=#{param.is_refunding}
+				</if>            
+	            
+	            
+	            <if test="param.merch_name !=null">
+	                and m1.merch_name like CONCAT('%',#{param.merch_name},'%')
+	            </if>
+	            <if test="param.category &gt; 0">
+			        and m1.merch_type=#{param.category}
+		        </if>
+	<!-- 	        	游玩开始时间，游玩结束时间  -->
+			    <if test="param.start_visit_time !=null">
+					<![CDATA[ and m1.start_time >= date_format(#{param.start_visit_time},'%Y-%m-%d 00:00:00')]]>
+				</if>  
+				<if test="param.end_visit_time !=null">
+					<![CDATA[ and m1.expire_time <= date_format(#{param.end_visit_time},'%Y-%m-%d 23:59:59')]]>
+				</if>  
+			</where>
+	         GROUP BY
+		     o1.order_id
+		     order by o1.create_time DESC
+             limit #{page_index},#{page_size}
+	         ) b ON o.order_id = b.order_id
+        JOIN t_order_merch AS m ON m.order_id = o.order_id
+        ORDER BY
+	    o.create_time DESC
+    </select> 
+    
+    	<!-- 根据订单ID获取订单信息. -->
+	<select id="queryOrderDetailByOrderId" resultType="com.pzj.trade.order.entity.OrderEntity"
+		parameterType="String">
+		select
+		<include refid="column_list" />
+		from
+		t_order
+		where
+	     order_level=1
+	    <if test="order_id !=null">
+			and order_id = #{order_id}
+		</if>
+		<if test="transaction_id !=null">
+			and transaction_id = #{transaction_id}
+		</if>
+		<if test="supplier_id &gt; 0">
+				and supplier_id = #{supplier_id}
+		</if>
+	</select>	
+	
+	<sql id="whereForQuerySaaSSpplierOrder">
+		m.order_id = o.transaction_id
+		and o.order_level=1
+        <if test="reseller_id &gt; 0 ">
+    	    and   o.reseller_id=#{reseller_id}
+    	</if>
+		<if test="reseller_ids != null  and reseller_ids.size()>0">
+			and o.reseller_id in
+			<foreach collection="reseller_ids" item="reseller_id"
+				separator="," open="(" close=")">
+				#{reseller_id}
+			</foreach>
+		</if>
+    	
+        <if test="channel_id &gt; 0 ">
+    	    and  m.channel_id=#{channel_id}
+    	</if>
+    	
+    	<if test="channel_ids != null  and channel_ids.size()>0">
+			and m.channel_id in
+			<foreach collection="channel_ids" item="channel_id"
+				separator="," open="(" close=")">
+				#{channel_id}
+			</foreach>
+		</if>
+    	
+		<if test="order_id !=null">
+			and o.p_order_id=#{order_id}
+		</if>
+		<if test="transaction_id !=null">
+			and o.transaction_id=#{transaction_id}
+		</if>
+		<if test="supplier_id &gt; 0">
+			and o.supplier_id = #{supplier_id}
+		</if>
+		<if test="is_direct_sale &gt; 0">
+			and o.supplier_id=o.reseller_id
+		</if>
+		<if test="order_status &gt; 0">
+			and o.order_status = #{order_status}
+		</if>
+		<if
+			test="order_status_list != null  and order_status_list.size()>0">
+			and o.order_status in
+			
+		
+			<foreach collection="order_status_list" item="order_status"
+				separator="," open="(" close=")">
+				#{order_status}
+			</foreach>
+		</if>
+
+		<if test="contactee !=null">
+			and o.contactee like CONCAT('%',#{contactee},'%')
+		</if>
+		<if test="contact_mobile !=null">
+			and o.contact_mobile = #{contact_mobile}
+		</if>
+		<if test="idcard_no !=null">
+			and o.idcard_no = #{idcard_no}
+		</if>
+		<if test="operator_id &gt; 0">
+			and o.operator_id = #{operator_id}
+		</if>
+		<if test="start_date != null">
+			<![CDATA[ and o.create_time >= date_format(#{start_date},'%Y-%m-%d 00:00:00')]]>
+		</if>
+		<if test="end_date != null">
+			<![CDATA[ and o.create_time <= date_format(#{end_date},'%Y-%m-%d 23:59:59')]]>
+		</if>
+
+		<!-- 如果查询商品状态不是已退款 -->
+		<if test="merch_state !=null and merch_state !=3 and query_type==0">
+			and o.transaction_id in (select c.order_id from t_order_merch c where c.merch_state=#{merch_state} and c.is_refunding=0)
+		</if>
+		<if test="merch_state !=null and merch_state !=3 and query_type!=0">
+			and m.merch_state=#{merch_state}
+			and m.is_refunding=0
+		</if>	
+			
+		<!-- 如果查询商品状态是已退款：退款数量大于0且没有处于退款中 -->
+		<if test="merch_state !=null and merch_state ==3 and query_type!=0">
+			and m.is_refunding=0 and m.refund_num>0
+		</if>
+		<if test="merch_state !=null and merch_state ==3 and query_type==0">
+			and o.transaction_id in (select c.order_id from t_order_merch c where c.is_refunding=0 and c.refund_num>0)
+		</if>
+		<if test="merch_states != null  and merch_states.size()>0">
+			and m.merch_state in
+			<foreach collection="merch_states" item="merch_state"
+				separator="," open="(" close=")">
+				#{merch_state}
+			</foreach>
+		</if>
+	    <if test="is_refunding !=null and is_native_product==null">
+				and m.is_refunding=#{is_refunding}
+		</if>
+		<if test="is_refunding !=null and is_native_product==0">
+			AND o.transaction_id not in (select order_id from t_order_merch where is_refunding=1)
+		</if>
+		
+		
+		
+<!-- 		<if test="is_refunding !=null and  query_type!=0"> -->
+<!-- 				and m.is_refunding=#{is_refunding} -->
+<!-- 		</if> -->
+<!-- 		<if test="is_refunding !=null and  query_type==0"> -->
+<!-- 				and o.transaction_id in (select c.order_id from t_order_merch c where c.is_refunding=#{is_refunding}) -->
+<!-- 		</if> -->
+		
+		
+		<if test="merch_name !=null">
+			and m.merch_name like CONCAT('%',#{merch_name},'%')
+		</if>
+		
+		<if test="merch_type &gt; 0">
+			and m.merch_type=#{merch_type}
+		</if>
+		<if test="merchTypes != null  and merchTypes.size()>0">
+			and m.merch_type in
+			<foreach collection="merchTypes" item="merchType"
+				separator="," open="(" close=")">
+				#{merchType}
+			</foreach>
+		</if>
+		
+		<!-- 	游玩开始时间，游玩结束时间  -->
+	    <if test="accurateStartTime !=null">
+			<![CDATA[ and m.start_time >= date_format(#{accurateStartTime},'%Y-%m-%d 00:00:00')]]>
+		</if>  
+		<if test="accurateEndTime !=null">
+			<![CDATA[ and m.expire_time <= date_format(#{accurateEndTime},'%Y-%m-%d 23:59:59')]]>
+		</if>  
+		
+		<if test="sale_port_list != null  and sale_port_list.size()>0">
+		    and o.sale_port in
+		<foreach collection="sale_port_list" item="sale_port"
+			separator="," open="(" close=")">
+			#{sale_port}
+		</foreach>
+	    </if>
+        <if test="sale_port &gt; 0">
+		    and o.sale_port = #{sale_port}
+	    </if>
+		<if test="product_varie !=null">
+			and m.product_varie = #{product_varie}
+		</if>
+		<if test="pay_way !=null">
+			and o.pay_way = #{pay_way}
+			and order_status in (10,30,40)
+		</if>
+		<if test="pay_ways != null  and pay_ways.size()>0">
+			and o.pay_way in
+			<foreach collection="pay_ways" item="pay_way"
+				separator="," open="(" close=")">
+				#{pay_way}
+			</foreach>
+			and order_status in (10,30,40)
+		</if>
+		<if test="product_id &gt; 0">
+			and m.product_id = #{product_id}
+		</if>
+		<if test="guide_id &gt; 0">
+			and o.guide_id = #{guide_id}
+		</if>
+		<if test="guide_ids != null  and guide_ids.size()>0">
+			and o.guide_id in
+			<foreach collection="guide_ids" item="guide_id"
+				separator="," open="(" close=")">
+				#{guide_id}
+			</foreach>
+		</if>
+		<if test="product_ids != null  and product_ids.size()>0">
+			and m.product_id in
+			<foreach collection="product_ids" item="product_id"
+				separator="," open="(" close=")">
+				#{product_id}
+			</foreach>
+		</if>
+		
+		<if test="sale_piont &gt; 0">
+			and o.ticket_office_id = #{sale_piont}
+		</if>
+		<if test="sale_person_id &gt; 0">
+			and o.operator_id = #{sale_person_id}
+		</if>
+		<if test="order_source !=null">
+			and o.order_source = #{order_source}
+		</if>
+		
+		<if test="sale_person_ids != null  and sale_person_ids.size()>0">
+			and o.operator_id in
+			<foreach collection="sale_person_ids" item="sale_person_id"
+				separator="," open="(" close=")">
+				#{sale_person_id}
+			</foreach>
+		</if>
+		<if test="sale_piont_ids != null  and sale_piont_ids.size()>0">
+			and o.ticket_office_id in
+			<foreach collection="sale_piont_ids" item="sale_piont"
+				separator="," open="(" close=")">
+				#{sale_piont}
+			</foreach>
+		</if>
+		
+		
+		<if test="voucher_ids != null  and voucher_ids.size()>0">
+			and m.voucher_id in
+			<foreach collection="voucher_ids" item="v_id"
+				separator="," open="(" close=")">
+				#{v_id}
+			</foreach>
+		</if>
+		<if test="need_confirm &gt; 0">
+			and o.need_confirm = #{need_confirm}
+		</if>
+		<if test="is_online &gt; 0">
+			 and o.sale_port != 1
+		</if>
+		<if test="isforceOrder == true">
+	   		<![CDATA[	and m.is_refunding=0 and (m.refund_num=0 or m.refund_num<m.total_num)]]>
+		</if>	
+		<if test="is_native_product == 0">
+	   		and m.merch_type !=5000
+		</if>
+	</sql>
+<!--    <select id="querySaaSSupplierOrderCount" resultType="com.pzj.trade.order.entity.OrderCountEntity"> -->
+<!--   select sum(order_nums) as order_num , sum(merch_nums) as  merch_num, sum(amounts) as amount -->
+<!--     from   (select  -->
+<!--     	count(distinct o.order_id) as order_nums, -->
+<!-- 	    	sum(m.total_num) as merch_nums, -->
+<!-- 	    	o.total_amount as amounts -->
+<!-- 	    from -->
+<!-- 	      	t_order o, t_order_merch m -->
+<!-- 	   	<where> -->
+<!-- 	   		<include refid="whereForQuerySaaSSpplierOrder" />  -->
+<!-- 	   	</where> -->
+<!-- 	   	group by o.transaction_id -->
+<!-- 	   	) tt -->
+<!--     </select> -->
+
+   <select id="querySaaSSupplierOrderCount" resultType="com.pzj.trade.order.entity.OrderCountEntity">
+		SELECT
+			count(order_id) order_num,
+			sum(total_num) merch_num,
+			sum(total_amount) amount
+		FROM
+			t_order o
+		WHERE
+			o.order_id IN (
+				SELECT DISTINCT
+					o.order_id
+				FROM
+					t_order o,
+					t_order_merch m
+		<where>
+	   		<include refid="whereForQuerySaaSSpplierOrder" /> 
+	   	</where>
+			);
+    </select>
+    
+    <select id="querySaaSOrderByCondition" resultType="com.pzj.trade.merch.entity.MerchListEntity">
+        select
+        o.order_id,
+        o.p_order_id,
+        o.order_status,
+        o.online_pay,
+        o.version,
+        o.transaction_id,
+        o.supplier_id,
+        o.create_time,
+		o.sale_port,
+        o.checked_num,
+        o.total_amount,
+        o.contactee,
+       	o.operator_id,
+        o.contact_mobile,
+        o.need_confirm,
+        o.reseller_id,
+        o.refund_num as
+		order_refund_num,
+		o.refund_amount as order_refund_amount,
+		o.settlement_price as order_settlement_price,
+        m.merch_id,
+        m.merch_name,
+        m.merch_type,
+        m.merch_state,
+        m.product_id,
+        m.is_refunding,
+	    m.total_num as
+		merch_total_num,
+        m.check_num,
+        m.refund_num,
+        m.voucher_id,
+        m.product_id,
+        m.start_time,
+        m.expire_time,
+        m.product_varie,
+        m.price,
+		m.settlement_price,
+		m.check_num,
+		m.refund_num,
+        m.channel_id,
+        m.root_merch_id
+        from
+        	t_order as o
+		JOIN (
+	            SELECT
+					o1.order_id 
+			    FROM
+				    t_order AS o1
+				    
+				  <if test="param.haveMerchFilter == true">
+				    LEFT JOIN t_order_merch m1 ON o1.transaction_id = m1.order_id
+				   </if>
+				<where>
+				order_level=1
+			 <if test="param.reseller_id &gt; 0 ">
+	    	    and   o1.reseller_id=#{param.reseller_id}
+	    	</if>
+			<if test="param.reseller_ids != null  and param.reseller_ids.size()>0">
+				and o1.reseller_id in
+				<foreach collection="param.reseller_ids" item="reseller_id"
+					separator="," open="(" close=")">
+					#{reseller_id}
+				</foreach>
+			</if>
+	    	
+	        <if test="param.channel_id &gt; 0 ">
+	    	    and  m1.channel_id=#{param.channel_id}
+	    	</if>
+	    	<if test="param.channel_ids != null  and param.channel_ids.size()>0">
+				and m1.channel_id in
+				<foreach collection="param.channel_ids" item="channel_id"
+					separator="," open="(" close=")">
+					#{channel_id}
+				</foreach>
+		    </if>
+	    	
+			<if test="param.order_id !=null">
+				and o1.p_order_id=#{param.order_id}
+			</if>
+	
+			<if test="param.transaction_id !=null">
+				and o1.transaction_id=#{param.transaction_id}
+			</if>
+			
+			<if test="param.supplier_id &gt; 0">
+				and o1.supplier_id = #{param.supplier_id}
+			</if>
+			<if test="param.is_direct_sale &gt; 0">
+				and o1.supplier_id=o1.reseller_id
+			</if>
+			<if test="param.order_status &gt; 0">
+				and o1.order_status = #{param.order_status}
+			</if>
+			<if
+				test="param.order_status_list != null  and param.order_status_list.size()>0">
+				and o1.order_status in
+				<foreach collection="param.order_status_list" item="order_status"
+					separator="," open="(" close=")">
+					#{order_status}
+				</foreach>
+			</if>
+		
+			<if test="param.contactee !=null">
+				and o1.contactee like CONCAT('%',#{param.contactee},'%')
+			</if>
+			<if test="param.contact_mobile !=null">
+				and o1.contact_mobile = #{param.contact_mobile}
+			</if>
+			<if test="param.idcard_no !=null">
+				and o1.idcard_no = #{param.idcard_no}
+			</if>
+			<if test="param.operator_id &gt; 0">
+				and o1.operator_id = #{param.operator_id}
+			</if>
+			<if test="param.start_date != null">
+				<![CDATA[ and o1.create_time >= date_format(#{param.start_date},'%Y-%m-%d 00:00:00')]]>
+			</if>
+			<if test="param.end_date != null">
+				<![CDATA[ and o1.create_time <= date_format(#{param.end_date},'%Y-%m-%d 23:59:59')]]>
+			</if>
+	
+			<!-- 如果查询商品状态不是已退款 -->
+			<if test="param.merch_state !=null and param.merch_state !=3 and param.query_type!=0">
+				and m1.merch_state=#{param.merch_state}
+				and m1.is_refunding=0
+			</if>	
+			<if test="param.merch_state !=null and param.merch_state !=3 and param.query_type==0">
+				and o1.transaction_id in (select c.order_id from t_order_merch c where c.merch_state=#{param.merch_state} and c.is_refunding=0)
+			</if>	
+				
+			<!-- 如果查询商品状态是已退款：退款数量大于0且没有处于退款中 -->
+			<if test="param.merch_state !=null and param.merch_state ==3 and param.query_type!=0">
+				and m1.is_refunding=0 and m1.refund_num>0
+			</if>
+			<if test="param.merch_state !=null and param.merch_state ==3 and param.query_type==0">
+				and o1.transaction_id in (select c.order_id from t_order_merch c where c.is_refunding=0 and c.refund_num>0)
+			</if>
+			<if test="param.merch_states != null  and param.merch_states.size()>0">
+				and m1.merch_state in
+				<foreach collection="param.merch_states" item="merch_state"
+					separator="," open="(" close=")">
+					#{merch_state}
+				</foreach>
+			</if>
+				<if test="param.is_refunding !=null and param.is_native_product==null">
+					and m1.is_refunding=#{param.is_refunding}
+			    </if>
+			    <if test="param.is_refunding !=null and param.is_native_product==0">
+			        AND o1.transaction_id not in (select order_id from t_order_merch where is_refunding=1)
+		        </if>
+			    
+<!-- 			<if test="param.is_refunding !=null and param.query_type!=0"> -->
+<!-- 					and m1.is_refunding=#{param.is_refunding} -->
+<!-- 			</if> -->
+<!-- 			<if test="param.is_refunding !=null and  param.query_type==0"> -->
+<!-- 				and o1.transaction_id in (select c.order_id from t_order_merch c where c.is_refunding=#{param.is_refunding}) -->
+<!-- 		    </if> -->
+			
+			<if test="param.merch_name !=null">
+				and m1.merch_name like CONCAT('%',#{param.merch_name},'%')
+			</if>
+			
+			<if test="param.merch_type &gt; 0">
+				and m1.merch_type=#{param.merch_type}
+			</if>
+			<if test="param.merchTypes != null  and param.merchTypes.size()>0">
+				and m1.merch_type in
+				<foreach collection="param.merchTypes" item="merchType"
+					separator="," open="(" close=")">
+					#{merchType}
+				</foreach>
+			</if>
+			
+			<!-- 	游玩开始时间，游玩结束时间  -->
+		    <if test="param.accurateStartTime !=null">
+				<![CDATA[ and m1.start_time >= date_format(#{param.accurateStartTime},'%Y-%m-%d 00:00:00')]]>
+			</if>  
+			<if test="param.accurateEndTime !=null">
+				<![CDATA[ and m1.expire_time <= date_format(#{param.accurateEndTime},'%Y-%m-%d 23:59:59')]]>
+			</if>  
+			
+			<if test="param.sale_port_list != null  and param.sale_port_list.size()>0">
+			    and o1.sale_port in
+			<foreach collection="param.sale_port_list" item="sale_port"
+				separator="," open="(" close=")">
+				#{sale_port}
+			</foreach>
+		    </if>
+	        <if test="param.sale_port &gt; 0">
+			    and o1.sale_port = #{param.sale_port}
+		    </if>
+			<if test="param.product_varie !=null">
+				and m1.product_varie = #{param.product_varie}
+			</if>
+			<if test="param.pay_way !=null">
+				and o1.pay_way = #{param.pay_way}
+				and order_status in (10,30,40)
+			</if>
+			
+		<if test="param.pay_ways != null  and param.pay_ways.size()>0">
+			and o1.pay_way in
+			<foreach collection="param.pay_ways" item="pay_way"
+				separator="," open="(" close=")">
+				#{pay_way}
+			</foreach>
+			and order_status in (10,30,40)
+		</if>
+			
+			
+			<if test="param.product_id &gt; 0">
+				and m1.product_id = #{param.product_id}
+			</if>
+			<if test="param.guide_id &gt; 0">
+				and o1.guide_id = #{param.guide_id}
+			</if>
+			<if test="param.guide_ids != null  and param.guide_ids.size()>0">
+				and o1.guide_id in
+				<foreach collection="param.guide_ids" item="guide_id"
+					separator="," open="(" close=")">
+					#{guide_id}
+				</foreach>
+			</if>
+			<if test="param.product_ids != null  and param.product_ids.size()>0">
+				and m1.product_id in
+				<foreach collection="param.product_ids" item="product_id"
+					separator="," open="(" close=")">
+					#{product_id}
+				</foreach>
+		   </if>
+			
+			<if test="param.sale_piont &gt; 0">
+				and o1.ticket_office_id = #{param.sale_piont}
+			</if>
+			<if test="param.sale_person_id &gt; 0">
+				and o1.operator_id = #{param.sale_person_id}
+			</if>
+			<if test="param.order_source !=null">
+				and o1.order_source = #{param.order_source}
+			</if>
+			<if test="param.sale_person_ids != null  and param.sale_person_ids.size()>0">
+				and o1.operator_id in
+				<foreach collection="param.sale_person_ids" item="sale_person_id"
+					separator="," open="(" close=")">
+					#{sale_person_id}
+				</foreach>
+			</if>
+			<if test="param.sale_piont_ids != null  and param.sale_piont_ids.size()>0">
+				and o1.ticket_office_id in
+				<foreach collection="param.sale_piont_ids" item="sale_piont"
+					separator="," open="(" close=")">
+					#{sale_piont}
+				</foreach>
+		    </if>	
+			
+			<if test="param.voucher_ids != null  and param.voucher_ids.size()>0">
+				and m1.voucher_id in
+				<foreach collection="param.voucher_ids" item="v_id"
+					separator="," open="(" close=")">
+					#{v_id}
+				</foreach>
+			</if>
+			<if test="param.need_confirm &gt; 0">
+				and o1.need_confirm = #{param.need_confirm}
+			</if>
+			<if test="param.is_online &gt; 0">
+				 and o1.sale_port != 1
+			</if>
+			<if test="param.isforceOrder == true">
+		   		<![CDATA[	and m1.is_refunding=0 and (m1.refund_num=0 or m1.refund_num<m1.total_num)]]>
+			</if>	
+			<if test="param.is_native_product == 0">
+		   		and m1.merch_type !=5000
+			</if>
+				</where>
+		         GROUP BY
+			     o1.order_id
+			     order by o1.create_time DESC
+	             limit #{page_index},#{page_size}
+	             ) b ON o.order_id = b.order_id
+        JOIN t_order_merch AS m ON m.order_id = o.transaction_id
+        ORDER BY
+	    o.create_time 
+	    <if test="param.sortDesc == true">
+			desc
+		</if>
+    </select> 
+	
+   <select id="queryOrderAmountSupplierId" resultType="com.pzj.trade.order.entity.OrderCountEntity">
+	   select 
+	   	sum(o.total_amount) as amount
+	   from
+	     	t_order o
+	   where
+	   <![CDATA[order_level>1]]>
+	   <if test="supplier_id &gt; 0">
+	     and o.supplier_id=#{supplier_id}
+	  </if> 
+    </select>
+	
+	<select id="queryOrderExports" resultType="com.pzj.core.trade.export.entity.SaaSOrderExportEntity">
+	select
+	o.transaction_id,
+	o.order_id,
+	o.order_status,
+	o.create_time,
+	m.start_time,
+	m.expire_time,
+	m.check_time,
+	o.sale_port,
+	o.supplier_id,
+	o.reseller_id,
+	o.contactee,
+	o.contact_mobile,
+	o.idcard_no,
+
+	m.product_id,
+	m.merch_name,
+	m.merch_type,
+	m.merch_state,
+	m.sku_name,
+	m.product_varie,
+	m.total_num,
+	m.check_num,
+	m.refund_num,
+	m.refunding_num,
+	m.supplier_id as original_supplier_id,
+	
+	(select price from t_order_strategy s where s.order_id=o.order_id and
+	s.merch_id=m.merch_id ) sale_price,
+	(select after_rebate_amount from t_order_strategy s where
+	s.order_id=o.order_id and s.merch_id=m.merch_id ) sale_after_rebate,
+	0 purch_price,
+	0 purch_after_rebate,
+
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='contact'
+	and a.attr_key='contact_spelling'
+	and a.transaction_id=o.transaction_id) contact_spelling,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='contact'
+	and a.attr_key='contact_email'
+	and a.transaction_id=o.transaction_id) contact_email,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='delivery'
+	and a.attr_key='delivery_addr_nation'
+	and a.transaction_id=o.transaction_id) delivery_addr_nation,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='delivery'
+	and a.attr_key='delivery_addr_province'
+	and a.transaction_id=o.transaction_id) delivery_addr_province,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='delivery'
+	and a.attr_key='delivery_addr_city'
+	and a.transaction_id=o.transaction_id) delivery_addr_city,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='delivery'
+	and a.attr_key='delivery_addr_county'
+	and a.transaction_id=o.transaction_id) delivery_addr_county,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='delivery'
+	and a.attr_key='delivery_addr_detail'
+	and a.transaction_id=o.transaction_id) delivery_addr_detail,
+
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_on_addr_nation'
+	and a.transaction_id=o.transaction_id) get_on_addr_nation,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_on_addr_province'
+	and a.transaction_id=o.transaction_id) get_on_addr_province,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_on_addr_city'
+	and a.transaction_id=o.transaction_id) get_on_addr_city,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_on_addr_county'
+	and a.transaction_id=o.transaction_id) get_on_addr_county,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_on_addr_detail'
+	and a.transaction_id=o.transaction_id) get_on_addr_detail,
+
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_off_addr_nation'
+	and a.transaction_id=o.transaction_id) get_off_addr_nation,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_off_addr_province'
+	and a.transaction_id=o.transaction_id) get_off_addr_province,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_off_addr_city'
+	and a.transaction_id=o.transaction_id) get_off_addr_city,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_off_addr_county'
+	and a.transaction_id=o.transaction_id) get_off_addr_county,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='user_car'
+	and a.attr_key='get_off_addr_detail'
+	and a.transaction_id=o.transaction_id) get_off_addr_detail,
+
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='other'
+	and a.attr_key='expect_use_car_time'
+	and a.transaction_id=o.transaction_id) expect_use_car_time,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='other'
+	and a.attr_key='expect_to_shop_time'
+	and a.transaction_id=o.transaction_id) expect_to_shop_time,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='other'
+	and a.attr_key='flight_no'
+	and a.transaction_id=o.transaction_id) flight_no,
+	(select attr_value from t_order_extend_attr a
+	where a.attr_group='other'
+	and a.attr_key='train_no'
+	and a.transaction_id=o.transaction_id) train_no,
+
+	(select remark from t_order_remarks r where r.order_id=o.transaction_id limit 1)
+	remark
+	from
+	t_order o, t_order_merch m
+   	<where>
+   		<include refid="whereForQuerySaaSSpplierOrder" /> 
+   	</where>
+    </select>
+</mapper>
+

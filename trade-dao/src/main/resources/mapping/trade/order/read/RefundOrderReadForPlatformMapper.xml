@@ -1,0 +1,937 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.RefundOrderReadForPlatformMapper">
+
+	<sql id="column_list">
+		order_id,
+		transaction_id,
+		p_order_id,
+		payer_id,
+		operator_id,
+		supplier_id,
+		reseller_id,
+		travel,
+		travel_depart_id,
+		depart,
+		guide_id,
+		guider,
+		need_confirm as confirm,
+		order_status,
+		total_amount,
+		refund_amount,
+		total_num,
+		checked_num,
+		refund_num,
+		order_type,
+		sale_port,
+		contactee,
+		contact_mobile,
+		idcard_no,
+		create_time,
+		pay_time,
+		third_code,
+		third_pay_type,
+		pay_way,
+		confirm_time,
+		settlement_price,
+		need_confirm ,
+		agent_flag,
+		is_direct,
+		online_pay,
+		is_dock,
+		version,
+		order_level
+	</sql>
+	
+	<!-- 支撑平台查询强制退款.新增商品总数量及订单总金额 -->
+	<select id="getRefundOrderCountByCondition" resultType="com.pzj.trade.order.entity.OrderCountEntity">
+		select
+		count(order_id) order_num,
+		sum(total_num) merch_num,
+		sum(total_amount) amount
+		from t_order
+		where order_id in (
+		select
+		distinct
+		o.order_id
+		from
+		t_order as o
+		LEFT JOIN t_order_merchrefund_flow as f
+		on
+		f.order_id=o.order_id
+		LEFT JOIN t_refund_apply ra
+		on
+		ra.refund_id=f.refund_id
+
+		<if test="param.haveMerchFilter == true">
+			left join
+			t_order_merch as m
+			on
+			m.order_id = o.transaction_id
+		</if>
+		<if
+			test="param.supplier_id &gt; 0 or param.supplier_order_ids !=null  or param.supplier_ids!=null">
+			LEFT JOIN
+			t_order AS o2
+			ON o2.p_order_id = o.order_id
+		</if>
+		<where>
+			<if test="param.isforceOrder == false">
+				ra.refund_audit_state=1
+			</if>
+			<if test="param.isforceOrder == true">
+				<if test="param.refund_state >0">
+
+					ra.refund_state=#{param.refund_state}
+				</if>
+				and ra.is_force=1
+			</if>
+		    <if test="param.isReseller == true">
+			   and o.order_id=o.transaction_id
+			</if>
+			<if test="param.isReseller == false">
+		    	and o.order_level=1
+			</if>
+			<if test="param.voucher_ids != null  and param.voucher_ids.size()>0">
+				and m.voucher_id in
+				<foreach collection="param.voucher_ids" item="v_id"
+					separator="," open="(" close=")">
+					#{v_id}
+				</foreach>
+			</if>
+			<if test="param.merch_ids != null  and param.merch_ids.size()>0">
+				and m.merch_id in
+				<foreach collection="param.merch_ids" item="merch_id"
+					separator="," open="(" close=")">
+					#{merch_id}
+				</foreach>
+			</if>
+
+			<if test="param.supplier_id &gt; 0">
+				and o2.supplier_id = #{param.supplier_id}
+				and
+<!-- 				o2.order_type in (1,3) -->
+			</if>
+			<if test="param.supplier_ids != null  and param.supplier_ids.size()>0">
+				and o2.supplier_id in
+				<foreach collection="param.supplier_ids" item="supplier_id"
+					separator="," open="(" close=")">
+					#{supplier_id}
+				</foreach>
+<!-- 				and o2.order_type in (1,3) -->
+			</if>
+			<if
+				test="param.order_status_list != null  and param.order_status_list.size()>0">
+				and o.order_status in
+				<foreach collection="param.order_status_list" item="order_status"
+					separator="," open="(" close=")">
+					#{order_status}
+				</foreach>
+			</if>
+			<if test="param.sale_port_list != null  and param.sale_port_list.size()>0">
+				and o.sale_port in
+				<foreach collection="param.sale_port_list" item="sale_port"
+					separator="," open="(" close=")">
+					#{sale_port}
+				</foreach>
+			</if>
+			<if test="param.order_id !=null">
+				and o.order_id=#{param.order_id}
+			</if>
+
+			<if test="param.reseller_id &gt; 0">
+				and o.reseller_id = #{param.reseller_id}
+			</if>
+			<if test="param.reseller_ids != null  and param.reseller_ids.size()>0">
+				and o.reseller_id in
+				<foreach collection="param.reseller_ids" item="reseller_id"
+					separator="," open="(" close=")">
+					#{reseller_id}
+				</foreach>
+			</if>
+
+			<if test="param.order_status &gt; 0">
+				and o.order_status = #{param.order_status}
+			</if>
+			<if test="param.operator_id &gt; 0">
+				and o.operator_id = #{param.operator_id}
+			</if>
+			<if test="param.contactee !=null">
+				and o.contactee like CONCAT('%',#{param.contactee},'%')
+			</if>
+			<if test="param.contact_mobile !=null">
+				and o.contact_mobile = #{param.contact_mobile}
+			</if>
+			<if test="param.idcard_no !=null">
+				and o.idcard_no = #{param.idcard_no}
+			</if>
+
+			<if test="param.is_direct  &gt; 0">
+				and o.is_direct = #{param.is_direct}
+			</if>
+
+			<if test="param.online_pay !=null">
+				and o.online_pay = #{param.online_pay}
+				and o.order_status
+				in (10,30,40)
+			</if>
+
+			<if test="param.start_date != null">
+					<![CDATA[ and o.create_time >= date_format(#{param.start_date},'%Y-%m-%d 00:00:00')]]>
+			</if>
+			<if test="param.end_date != null">
+					<![CDATA[ and o.create_time <= date_format(#{param.end_date},'%Y-%m-%d 23:59:59')]]>
+			</if>
+			<if test="param.merchTypes != null  and param.merchTypes.size()>0">
+				and m.merch_type in
+				<foreach collection="param.merchTypes" item="merchType"
+					separator="," open="(" close=")">
+					#{merchType}
+				</foreach>
+			</if>
+			<if test="param.merch_type &gt; 0">
+				and m.merch_type=#{param.merch_type}
+			</if>
+
+			<if test="param.confirm_date_start != null">
+					<![CDATA[ and m.check_time >= date_format(#{param.confirm_date_start},'%Y-%m-%d 00:00:00')]]>
+			</if>
+			<if test="param.confirm_date_end != null">
+					<![CDATA[ and m.check_time <= date_format(#{param.confirm_date_end},'%Y-%m-%d 23:59:59')]]>
+			</if>
+			<if test="param.channel_id &gt; 0">
+				and m.channel_id = #{param.channel_id}
+			</if>
+			<if test="param.product_varie !=null">
+				and m.product_varie = #{param.product_varie}
+			</if>
+			<if test="param.sale_port &gt; 0">
+				and o.sale_port = #{param.sale_port}
+			</if>
+			<if test="param.need_confirm &gt; 0">
+				and o.need_confirm = #{param.need_confirm}
+			</if>
+			<!-- 待确认查询去除全部在退款的订单 -->
+			<if test="param.need_confirm == 2">
+				<![CDATA[ and m.total_num <> m.check_num + m.refund_num ]]>
+			</if>
+			<if
+				test="param.reseller_order_ids != null  and param.reseller_order_ids.size()>0">
+				and o.order_id in
+				<foreach collection="param.reseller_order_ids" item="reseller_order_id"
+					separator="," open="(" close=")">
+					#{reseller_order_id}
+				</foreach>
+			</if>
+			<if test="param.guide_id &gt; 0">
+				and o.guide_id=#{param.guide_id}
+			</if>
+
+			<if test="param.guide_ids != null  and param.guide_ids.size()>0">
+				and o.guide_id in
+				<foreach collection="param.guide_ids" item="guide_id"
+					separator="," open="(" close=")">
+					#{guide_id}
+				</foreach>
+			</if>
+
+
+			<if test="param.agent_flag &gt; 0">
+				and o.agent_flag=#{param.agent_flag}
+			</if>
+			<!-- 如果查询代下单列表，需要代下单的商品处于待确认、待消费的状态 -->
+			<if test="param.agent_flag == 2">
+				and m.merch_state in (0, 4)
+			</if>
+			<if
+				test="param.supplier_order_ids != null  and param.supplier_order_ids.size()>0">
+				and o2.order_id in
+				<foreach collection="param.supplier_order_ids" item="supplier_order_id"
+					separator="," open="(" close=")">
+					#{supplier_order_id}
+				</foreach>
+			</if>
+			<!-- 如果查询商品状态不是已退款 -->
+			<if test="param.merch_state !=null and param.merch_state !=3">
+				and m.merch_state=#{param.merch_state}
+				and
+				m.is_refunding=0
+			</if>
+
+			<if test="param.merch_states != null  and param.merch_states.size()>0">
+				and m.merch_state in
+				<foreach collection="param.merch_states" item="merch_state"
+					separator="," open="(" close=")">
+					#{merch_state}
+				</foreach>
+			</if>
+
+			<!-- 如果查询商品状态是已退款：退款数量大于0且没有处于退款中 -->
+			<if test="param.merch_state !=null and param.merch_state ==3">
+				and m.is_refunding=0 and m.refund_num>0
+			</if>
+			<if test="param.is_refunding !=null">
+				and m.is_refunding=#{param.is_refunding}
+			</if>
+			<if test="param.product_ids != null  and param.product_ids.size()>0">
+				and m.product_id in
+				<foreach collection="param.product_ids" item="product_id"
+					separator="," open="(" close=")">
+					#{product_id}
+				</foreach>
+			</if>
+			<if test="param.clear_type &gt; 0">
+				and m.clear_type=#{param.clear_type}
+			</if>
+
+			<if test="param.merch_name !=null">
+				and m.merch_name like CONCAT('%',#{param.merch_name},'%')
+			</if>
+			<!-- 游玩开始时间，游玩结束时间 -->
+			<if test="param.accurateStartTime !=null">
+				<![CDATA[ and m.start_time >=#{param.accurateStartTime,jdbcType=TIMESTAMP} ]]>
+			</if>
+			<if test="param.accurateEndTime !=null">
+				<![CDATA[ and m.expire_time <=#{param.accurateEndTime,jdbcType=TIMESTAMP} ]]>
+			</if>
+		</where>
+		)
+	</select>
+
+
+	<!--支撑平台查询强制退款订单列表 -->
+	<select id="getRefundOrderByCondition" resultType="com.pzj.trade.merch.entity.MerchListEntity">
+		select
+		a.order_id,
+		a.transaction_id,
+		a.p_order_id,
+		a.order_status,
+		a.checked_num,
+		a.create_time,
+		a.pay_time,
+		a.version,
+		a.confirm_time,
+		a.total_amount,
+		a.contactee,
+		a.contact_mobile,
+		a.sale_port,
+		a.payer_id,
+		a.operator_id,
+        a.supplier_id,
+		a.checked_num,
+		a.idcard_no,
+		a.reseller_id,
+		a.travel,
+		a.travel_depart_id,
+		a.guide_id,
+		a.agent_flag,
+		a.total_num,
+		a.need_confirm,
+		a.refund_num as
+		order_refund_num,
+		a.refund_amount as order_refund_amount,
+		a.settlement_price as order_settlement_price,
+		a.order_type,
+		a.is_direct,
+		a.online_pay,
+		a.is_dock,
+		t.merch_id,
+		t.merch_name,
+		t.merch_type,
+		t.merch_state,
+		t.product_id,
+		t.channel_id,
+		t.strategy_id,
+		t.voucher_id,
+		t.total_num as merch_total_num,
+		t.price,
+		t.merch_type,
+		t.product_varie,
+		t.settlement_price,
+		t.refund_num,
+		t.vour_type,
+		t.is_refunding,
+		t.check_time,
+		t.is_cleaned,
+		t.start_time,
+		t.expire_time,
+		t.root_merch_id,
+		b.refund_state
+		from
+		t_order a
+		join (
+		select
+		o.order_id,
+		ra.refund_state
+		from
+		t_order as o
+		LEFT JOIN t_order_merchrefund_flow as f
+		on
+		f.order_id=o.order_id
+		LEFT JOIN t_refund_apply as ra
+		on
+		ra.refund_id=f.refund_id
+		<if
+			test="param.supplier_id &gt; 0 or param.supplier_order_ids !=null  or param.supplier_ids!=null">
+			LEFT JOIN
+			t_order AS o2
+			ON o2.p_order_id = o.order_id
+		</if>
+		<if test="param.haveMerchFilter == true">
+			left join
+			t_order_merch as m
+			on
+			m.order_id = o.transaction_id
+		</if>
+		<where>
+			<if test="param.isforceOrder == false">
+				ra.refund_audit_state=1
+			</if>
+			<if test="param.isforceOrder == true">
+				<if test="param.refund_state >0">
+					ra.refund_state=#{param.refund_state}
+				</if>
+				and
+				ra.is_force=1
+			</if>
+			<if test="param.isReseller == true">
+			   and o.order_id=o.transaction_id
+			</if>
+			<if test="param.isReseller == false">
+		    	and o.order_level=1
+			</if>
+			<if test="param.voucher_ids != null  and param.voucher_ids.size()>0">
+				and m.voucher_id in
+				<foreach collection="param.voucher_ids" item="v_id"
+					separator="," open="(" close=")">
+					#{v_id}
+				</foreach>
+			</if>
+			<if test="param.merch_ids != null  and param.merch_ids.size()>0">
+				and m.merch_id in
+				<foreach collection="param.merch_ids" item="merch_id"
+					separator="," open="(" close=")">
+					#{merch_id}
+				</foreach>
+			</if>
+
+			<if test="param.supplier_id &gt; 0">
+				and o2.supplier_id = #{param.supplier_id}
+				and
+<!-- 				o2.order_type in (1,3) -->
+			</if>
+			<if test="param.supplier_ids != null  and param.supplier_ids.size()>0">
+				and o2.supplier_id in
+				<foreach collection="param.supplier_ids" item="supplier_id"
+					separator="," open="(" close=")">
+					#{supplier_id}
+				</foreach>
+<!-- 				and o2.order_type in (1,3) -->
+			</if>
+			<if
+				test="param.order_status_list != null  and param.order_status_list.size()>0">
+				and o.order_status in
+				<foreach collection="param.order_status_list" item="order_status"
+					separator="," open="(" close=")">
+					#{order_status}
+				</foreach>
+			</if>
+			<if test="param.sale_port_list != null  and param.sale_port_list.size()>0">
+				and o.sale_port in
+				<foreach collection="param.sale_port_list" item="sale_port"
+					separator="," open="(" close=")">
+					#{sale_port}
+				</foreach>
+			</if>
+			<if test="param.order_id !=null">
+				and o.order_id=#{param.order_id}
+			</if>
+			<if test="param.reseller_id &gt; 0">
+				and o.reseller_id = #{param.reseller_id}
+			</if>
+			<if test="param.reseller_ids != null  and param.reseller_ids.size()>0">
+				and o.reseller_id in
+				<foreach collection="param.reseller_ids" item="reseller_id"
+					separator="," open="(" close=")">
+					#{reseller_id}
+				</foreach>
+			</if>
+			<if test="param.order_status &gt; 0">
+				and o.order_status = #{param.order_status}
+			</if>
+			<if test="param.operator_id &gt; 0">
+				and o.operator_id = #{param.operator_id}
+			</if>
+
+			<if test="param.contactee !=null">
+				and o.contactee like CONCAT('%',#{param.contactee},'%')
+			</if>
+			<if test="param.contact_mobile !=null">
+				and o.contact_mobile = #{param.contact_mobile}
+			</if>
+			<if test="param.idcard_no !=null">
+				and o.idcard_no = #{param.idcard_no}
+			</if>
+
+			<if test="param.is_direct  &gt; 0">
+				and o.is_direct = #{param.is_direct}
+			</if>
+			<if test="param.online_pay !=null">
+				and o.online_pay = #{param.online_pay}
+				and o.order_status
+				in (10,30,40)
+			</if>
+			<if test="param.start_date != null">
+					<![CDATA[ and o.create_time >= date_format(#{param.start_date},'%Y-%m-%d 00:00:00')]]>
+			</if>
+			<if test="param.end_date != null">
+					<![CDATA[ and o.create_time <= date_format(#{param.end_date},'%Y-%m-%d 23:59:59')]]>
+			</if>
+			<if test="param.merchTypes != null  and param.merchTypes.size()>0">
+				and m.merch_type in
+				<foreach collection="param.merchTypes" item="merchType"
+					separator="," open="(" close=")">
+					#{merchType}
+				</foreach>
+			</if>
+			<if test="param.merch_type &gt; 0">
+				and m.merch_type=#{param.merch_type}
+			</if>
+			<if test="param.confirm_date_start != null">
+					<![CDATA[ and m.check_time >= date_format(#{param.confirm_date_start},'%Y-%m-%d 00:00:00')]]>
+			</if>
+			<if test="param.confirm_date_end != null">
+					<![CDATA[ and m.check_time <= date_format(#{param.confirm_date_end},'%Y-%m-%d 23:59:59')]]>
+			</if>
+			<if test="param.channel_id &gt; 0">
+				and m.channel_id = #{param.channel_id}
+			</if>
+			<if test="param.product_varie !=null">
+				and m.product_varie = #{param.product_varie}
+			</if>
+			<if test="param.sale_port &gt; 0">
+				and o.sale_port = #{param.sale_port}
+			</if>
+			<if test="param.need_confirm &gt; 0">
+				and o.need_confirm = #{param.need_confirm}
+			</if>
+			<!-- 待确认查询去除全部在退款的订单 -->
+			<if test="param.need_confirm == 2">
+				<![CDATA[ and m.total_num <> m.check_num + m.refund_num ]]>
+			</if>
+			<if
+				test="param.reseller_order_ids != null  and param.reseller_order_ids.size()>0">
+				and o.order_id in
+				<foreach collection="param.reseller_order_ids" item="reseller_order_id"
+					separator="," open="(" close=")">
+					#{reseller_order_id}
+				</foreach>
+			</if>
+			<if test="param.guide_id &gt; 0">
+				and o.guide_id=#{param.guide_id}
+			</if>
+			<if test="param.guide_ids != null  and param.guide_ids.size()>0">
+				and o.guide_id in
+				<foreach collection="param.guide_ids" item="guide_id"
+					separator="," open="(" close=")">
+					#{guide_id}
+				</foreach>
+			</if>
+			<if test="param.agent_flag &gt; 0">
+				and o.agent_flag=#{param.agent_flag}
+			</if>
+			<!-- 如果查询代下单列表，需要代下单的商品处于待确认、待消费的状态 -->
+			<if test="param.agent_flag == 2">
+				and m.merch_state in (0, 4)
+			</if>
+			<if
+				test="param.supplier_order_ids != null  and param.supplier_order_ids.size()>0">
+				and o2.order_id in
+				<foreach collection="param.supplier_order_ids" item="supplier_order_id"
+					separator="," open="(" close=")">
+					#{supplier_order_id}
+				</foreach>
+			</if>
+			<!-- 如果查询商品状态不是已退款 -->
+			<if test="param.merch_state !=null and param.merch_state !=3">
+				and m.merch_state=#{param.merch_state}
+				and
+				m.is_refunding=0
+			</if>
+			<!-- 如果查询商品状态是已退款：退款数量大于0且没有处于退款中 -->
+			<if test="param.merch_state !=null and param.merch_state ==3">
+				and m.is_refunding=0 and m.refund_num>0
+			</if>
+			<if test="param.is_refunding !=null">
+				and m.is_refunding=#{param.is_refunding}
+			</if>
+			<if test="param.product_ids != null  and param.product_ids.size()>0">
+				and m.product_id in
+				<foreach collection="param.product_ids" item="product_id"
+					separator="," open="(" close=")">
+					#{product_id}
+				</foreach>
+			</if>
+			<if test="param.clear_type &gt; 0">
+				and m.clear_type=#{param.clear_type}
+			</if>
+			<if test="param.merch_name !=null">
+				and m.merch_name like CONCAT('%',#{param.merch_name},'%')
+			</if>
+			<!-- 游玩开始时间，游玩结束时间 -->
+			<if test="param.accurateStartTime !=null">
+				<![CDATA[ and m.start_time >=#{param.accurateStartTime,jdbcType=TIMESTAMP} ]]>
+			</if>
+			<if test="param.accurateEndTime !=null">
+				<![CDATA[ and m.expire_time <=#{param.accurateEndTime,jdbcType=TIMESTAMP} ]]>
+			</if>
+		</where>
+		group by o.order_id
+		order by o.create_time
+		<if test="param.sortDesc == true">
+			desc
+		</if>
+		limit #{page_index},#{page_size}
+		) b
+		on
+		a.order_id = b.order_id
+		join
+		t_order_merch t
+		on t.order_id = a.transaction_id
+		order by a.create_time
+		<if test="param.sortDesc == true">
+			desc
+		</if>
+		,t.product_id
+	</select>
+	<!-- 支撑平台查询强制退款订单数量 -->
+	<select id="getForceRefundOrderCountByCondition"
+		resultType="com.pzj.trade.order.entity.ForceRefundOrderCountEntity">
+		select
+		o1.order_id ,a1.refund_id ,o1.transaction_id
+		from t_order o1
+		LEFT JOIN
+		t_order_merchrefund_flow AS f1 ON f1.order_id = o1.order_id
+		LEFT JOIN
+		t_refund_apply AS a1 ON a1.refund_id = f1.refund_id
+		where
+		o1.order_id in
+		(
+		select
+		distinct o.order_id
+		from
+		t_order as o
+		<if test="param.haveMerchFilter == true">
+			left join
+			t_order_merch as m
+			on
+			m.order_id = o.transaction_id
+		</if>
+		<if
+			test="param.supplier_id &gt; 0 or param.supplier_order_ids !=null  or param.supplier_ids!=null">
+			LEFT JOIN
+			t_order AS o2
+			ON o2.p_order_id = o.order_id
+		</if>
+		<where>
+			<if test="param.isReseller == true">
+			   and o.order_id=o.transaction_id
+			</if>
+			<if test="param.isReseller == false">
+		    	and o.order_level=1
+			</if>
+			
+			
+			<if test="param.voucher_ids != null  and param.voucher_ids.size()>0">
+				and m.voucher_id in
+				<foreach collection="param.voucher_ids" item="v_id"
+					separator="," open="(" close=")">
+					#{v_id}
+				</foreach>
+			</if>
+			<if test="param.merch_ids != null  and param.merch_ids.size()>0">
+				and m.merch_id in
+				<foreach collection="param.merch_ids" item="merch_id"
+					separator="," open="(" close=")">
+					#{merch_id}
+				</foreach>
+			</if>
+			<if test="param.supplier_id &gt; 0">
+				and o2.supplier_id = #{param.supplier_id}
+				and
+<!-- 				o2.order_type in (1,3) -->
+			</if>
+			<if test="param.supplier_ids != null  and param.supplier_ids.size()>0">
+				and o2.supplier_id in
+				<foreach collection="param.supplier_ids" item="supplier_id"
+					separator="," open="(" close=")">
+					#{supplier_id}
+				</foreach>
+<!-- 				and o2.order_type in (1,3) -->
+			</if>
+			<if
+				test="param.order_status_list != null  and param.order_status_list.size()>0">
+				and o.order_status in
+				<foreach collection="param.order_status_list" item="order_status"
+					separator="," open="(" close=")">
+					#{order_status}
+				</foreach>
+			</if>
+			<if test="param.sale_port_list != null  and param.sale_port_list.size()>0">
+				and o.sale_port in
+				<foreach collection="param.sale_port_list" item="sale_port"
+					separator="," open="(" close=")">
+					#{sale_port}
+				</foreach>
+			</if>
+			<if test="param.order_id !=null">
+				and o.order_id=#{param.order_id}
+			</if>
+
+			<if test="param.reseller_id &gt; 0">
+				and o.reseller_id = #{param.reseller_id}
+			</if>
+			<if test="param.reseller_ids != null  and param.reseller_ids.size()>0">
+				and o.reseller_id in
+				<foreach collection="param.reseller_ids" item="reseller_id"
+					separator="," open="(" close=")">
+					#{reseller_id}
+				</foreach>
+			</if>
+
+			<if test="param.order_status &gt; 0">
+				and o.order_status = #{param.order_status}
+			</if>
+			<if test="param.operator_id &gt; 0">
+				and o.operator_id = #{param.operator_id}
+			</if>
+			<if test="param.contactee !=null">
+				and o.contactee like CONCAT('%',#{param.contactee},'%')
+			</if>
+			<if test="param.contact_mobile !=null">
+				and o.contact_mobile = #{param.contact_mobile}
+			</if>
+			<if test="param.idcard_no !=null">
+				and o.idcard_no = #{param.idcard_no}
+			</if>
+
+			<if test="param.is_direct  &gt; 0">
+				and o.is_direct = #{param.is_direct}
+			</if>
+
+			<if test="param.online_pay !=null">
+				and o.online_pay = #{param.online_pay}
+				and o.order_status
+				in (10,30,40)
+			</if>
+
+			<if test="param.start_date != null">
+					<![CDATA[ and o.create_time >= date_format(#{param.start_date},'%Y-%m-%d 00:00:00')]]>
+			</if>
+			<if test="param.end_date != null">
+					<![CDATA[ and o.create_time <= date_format(#{param.end_date},'%Y-%m-%d 23:59:59')]]>
+			</if>
+			<if test="param.merchTypes != null  and param.merchTypes.size()>0">
+				and m.merch_type in
+				<foreach collection="param.merchTypes" item="merchType"
+					separator="," open="(" close=")">
+					#{merchType}
+				</foreach>
+			</if>
+			<if test="param.merch_type &gt; 0">
+				and m.merch_type=#{param.merch_type}
+			</if>
+
+			<if test="param.confirm_date_start != null">
+					<![CDATA[ and m.check_time >= date_format(#{param.confirm_date_start},'%Y-%m-%d 00:00:00')]]>
+			</if>
+			<if test="param.confirm_date_end != null">
+					<![CDATA[ and m.check_time <= date_format(#{param.confirm_date_end},'%Y-%m-%d 23:59:59')]]>
+			</if>
+			<if test="param.channel_id &gt; 0">
+				and m.channel_id = #{param.channel_id}
+			</if>
+			<if test="param.product_varie !=null">
+				and m.product_varie = #{param.product_varie}
+			</if>
+			<if test="param.sale_port &gt; 0">
+				and o.sale_port = #{param.sale_port}
+			</if>
+			<if test="param.need_confirm &gt; 0">
+				and o.need_confirm = #{param.need_confirm}
+			</if>
+			<!-- 待确认查询去除全部在退款的订单 -->
+			<if test="param.need_confirm == 2">
+				<![CDATA[ and m.total_num <> m.check_num + m.refund_num ]]>
+			</if>
+			<if
+				test="param.reseller_order_ids != null  and param.reseller_order_ids.size()>0">
+				and o.order_id in
+				<foreach collection="param.reseller_order_ids" item="reseller_order_id"
+					separator="," open="(" close=")">
+					#{reseller_order_id}
+				</foreach>
+			</if>
+			<if test="param.guide_id &gt; 0">
+				and o.guide_id=#{param.guide_id}
+			</if>
+
+			<if test="param.guide_ids != null  and param.guide_ids.size()>0">
+				and o.guide_id in
+				<foreach collection="param.guide_ids" item="guide_id"
+					separator="," open="(" close=")">
+					#{guide_id}
+				</foreach>
+			</if>
+
+
+			<if test="param.agent_flag &gt; 0">
+				and o.agent_flag=#{param.agent_flag}
+			</if>
+			<!-- 如果查询代下单列表，需要代下单的商品处于待确认、待消费的状态 -->
+			<if test="param.agent_flag == 2">
+				and m.merch_state in (0, 4)
+			</if>
+			<if
+				test="param.supplier_order_ids != null  and param.supplier_order_ids.size()>0">
+				and o2.order_id in
+				<foreach collection="param.supplier_order_ids" item="supplier_order_id"
+					separator="," open="(" close=")">
+					#{supplier_order_id}
+				</foreach>
+			</if>
+			<!-- 如果查询商品状态不是已退款 -->
+			<if test="param.merch_state !=null and param.merch_state !=3">
+				and m.merch_state=#{param.merch_state}
+				and
+				m.is_refunding=0
+			</if>
+
+			<if test="param.merch_states != null  and param.merch_states.size()>0">
+				and m.merch_state in
+				<foreach collection="param.merch_states" item="merch_state"
+					separator="," open="(" close=")">
+					#{merch_state}
+				</foreach>
+			</if>
+
+			<!-- 如果查询商品状态是已退款：退款数量大于0且没有处于退款中 -->
+			<if test="param.merch_state !=null and param.merch_state ==3">
+				and m.is_refunding=0 and m.refund_num>0
+			</if>
+			<if test="param.is_refunding !=null">
+				and m.is_refunding=#{param.is_refunding}
+			</if>
+			<if test="param.product_ids != null  and param.product_ids.size()>0">
+				and m.product_id in
+				<foreach collection="param.product_ids" item="product_id"
+					separator="," open="(" close=")">
+					#{product_id}
+				</foreach>
+			</if>
+			<if test="param.clear_type &gt; 0">
+				and m.clear_type=#{param.clear_type}
+			</if>
+
+			<if test="param.merch_name !=null">
+				and m.merch_name like CONCAT('%',#{param.merch_name},'%')
+			</if>
+			<!-- 游玩开始时间，游玩结束时间 -->
+			<if test="param.accurateStartTime !=null">
+				<![CDATA[ and m.start_time >=#{param.accurateStartTime,jdbcType=TIMESTAMP} ]]>
+			</if>
+			<if test="param.accurateEndTime !=null">
+				<![CDATA[ and m.expire_time <=#{param.accurateEndTime,jdbcType=TIMESTAMP} ]]>
+			</if>
+		</where>
+		)
+		<if test="param.isforceOrder == false">
+			and a1.refund_audit_state=1
+		</if>
+		<if test="param.isforceOrder == true">
+			<if test="param.refund_state >0">
+				and a1.refund_state=#{param.refund_state}
+			</if>
+			and a1.is_force=1
+		</if>
+		GROUP BY f1.refund_id ORDER BY o1.create_time DESC
+	</select>
+	<!--支撑平台查询已强制退款订单列表 -->
+	<select id="getForceRefundOrderByCondition" resultType="com.pzj.trade.merch.entity.MerchListEntity">
+		select
+		a.order_id,
+		a.p_order_id,
+		a.transaction_id,
+		a.version,
+		a.order_status,
+		a.checked_num,
+		a.create_time,
+		a.pay_time,
+		a.confirm_time,
+		a.total_amount,
+		a.contactee,
+		a.contact_mobile,
+		a.sale_port,
+		a.payer_id,
+		a.operator_id,
+		(select
+		t1.supplier_id from t_order t1 where t1.transaction_id= a.p_order_id
+		and t1.order_type in (1,3) limit 1) supplier_id,
+		a.checked_num,
+		a.idcard_no,
+		a.reseller_id,
+		a.travel,
+		a.travel_depart_id,
+		a.guide_id,
+		a.agent_flag,
+		a.total_num,
+		a.need_confirm,
+		a.refund_num as
+		order_refund_num,
+		a.refund_amount as order_refund_amount,
+		a.settlement_price as order_settlement_price,
+		a.order_type,
+		a.is_direct,
+		a.online_pay,
+		a.is_dock,
+		r1.refund_state,
+		r1.refund_id
+		from
+		t_order a
+		LEFT JOIN t_order_merchrefund_flow AS f1 ON f1.order_id =
+		a.order_id
+		LEFT JOIN t_refund_apply r1 ON r1.refund_id = f1.refund_id
+		<where>
+			<if test="param.isforceOrder == false">
+				r1.refund_audit_state=1
+			</if>
+			<if test="param.isforceOrder == true">
+				<if test="param.refund_state >0">
+					r1.refund_state=#{param.refund_state} and
+				</if>
+				r1.is_force=1
+			</if>
+			<if test="param.order_ids != null  and param.order_ids.size()>0">
+				and a.order_id in
+				<foreach collection="param.order_ids" item="order_id"
+					separator="," open="(" close=")">
+					#{order_id}
+				</foreach>
+			</if>
+			<if test="param.refund_ids != null  and param.refund_ids.size()>0">
+				and r1.refund_id in
+				<foreach collection="param.refund_ids" item="refund_id"
+					separator="," open="(" close=")">
+					#{refund_id}
+				</foreach>
+			</if>
+		</where>
+		GROUP BY r1.refund_id
+		order by a.create_time
+		<if test="param.sortDesc == true">
+			desc
+		</if>
+	</select>
+</mapper>

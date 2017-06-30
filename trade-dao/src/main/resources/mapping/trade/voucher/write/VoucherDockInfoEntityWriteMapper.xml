@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.voucher.write.VoucherDockInfoEntityWriteMapper" >
+  
+  <insert id="insert" parameterType="com.pzj.voucher.entity.VoucherDockInfoEntity" >
+    insert into
+    	t_voucher_dock_info (
+    	transaction_id,
+    	external_order_id,
+    	auxiliary_code
+    ) values (
+    	#{transactionId,jdbcType=VARCHAR},
+    	#{externalOrderId,jdbcType=VARCHAR}, 
+      	#{auxiliaryCode,jdbcType=VARCHAR}
+      )
+  </insert>
+
+</mapper>

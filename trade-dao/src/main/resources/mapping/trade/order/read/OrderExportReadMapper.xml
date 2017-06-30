@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.core.trade.export.read.OrderExportReadMapper">
+
+	<!-- 根据ID获取订单导出信息. -->
+	<select id="getExportById" resultType="com.pzj.core.trade.export.entity.OrderExportEntity">
+		select
+		export_id,
+		file_name,
+		param,
+		export_state,
+		err_msg,
+		create_time,
+		create_by
+		from
+		t_order_export
+		where
+		export_id=#{id}
+	</select>
+
+	<!-- 日志导出分页查询( dongchunfu ) -->
+	<select id="queryByParam"
+		parameterType="com.pzj.core.trade.export.entity.QueryOrderExportLogParam"
+		resultType="com.pzj.core.trade.export.entity.OrderExportEntity">
+		select
+		export_id as export_id,
+		file_name as file_name,
+		export_state as export_state,
+		create_time
+		as create_time
+		from t_order_export
+		<where>
+			<if test="param != null">
+				<if test="param.startTime != null and param.endTime != null">
+					create_time between #{param.startTime} and
+					#{param.endTime}
+				</if>
+			</if>
+			<if test="param.createBy != null">
+				and create_by = #{param.createBy}
+			</if>
+		</where>
+		ORDER BY create_time desc
+		<if test="param.pageAble">
+			limit #{param.pageIndex},#{param.pageSize}
+		</if>
+	</select>
+	<!-- 查询总条数 -->
+	<select id="countByParam"
+		parameterType="com.pzj.core.trade.export.entity.QueryOrderExportLogParam"
+		resultType="int">
+		select
+		count(export_id)
+		from t_order_export
+		<where>
+			<if test="param != null">
+				<if test="param.startTime != null and param.endTime != null">
+					create_time between #{param.startTime} and
+					#{param.endTime}
+				</if>
+			</if>
+			<if test="param.createBy != null">
+				and create_by = #{param.createBy}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryExportVerifyById"
+		parameterType="com.pzj.trade.export.model.OrderExportVerifyReqModel"
+		resultType="com.pzj.trade.export.model.OrderExportVerifyRepModel">
+		
+		select
+		export_id as id,
+		file_name as fileName,
+		create_by as createBy,
+		export_state as exportState,
+		create_time as createTime
+		from t_order_export
+		where export_id=#{param.id}
+	</select>
+</mapper>

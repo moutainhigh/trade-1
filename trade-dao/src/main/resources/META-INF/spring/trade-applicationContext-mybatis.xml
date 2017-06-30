@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+	<context:property-placeholder location="classpath*:jdbc.properties" ignore-unresolvable="true" />
+	
+	<bean id="trade.dbcp" destroy-method="close" abstract="true">
+		<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="initialSize" value="${jdbc.initialSize}"/>
+		<property name="maxWait" value="${jdbc.maxWait}"/>
+        <property name="minIdle" value="${jdbc.minIdle}"/>
+        <property name="maxActive" value="${jdbc.maxActive}"/>
+
+        <property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}" />
+        <property name="minEvictableIdleTimeMillis" value="${jdbc.minEvictableIdleTimeMillis}" />
+
+        <property name="removeAbandoned" value="${jdbc.removeAbandoned}"/>
+        <property name="removeAbandonedTimeout" value="${jdbc.removeAbandonedTimeout}"/>
+
+        <property name="validationQuery" value="${jdbc.validationQuery}"/>
+        <property name="testWhileIdle" value="${jdbc.testWhileIdle}" />
+        <property name="testOnBorrow" value="${jdbc.testOnBorrow}"/>
+        <property name="testOnReturn" value="${jdbc.testOnReturn}" />
+
+        <property name="filters" value="stat" />
+	</bean>
+
+	<bean id="trade.read" parent="trade.dbcp" class="com.alibaba.druid.pool.DruidDataSource">
+		<property value="${trade.read.url}" name="url" />
+		<property value="${trade.read.username}" name="username" />
+		<property value="${trade.read.password}" name="password" />
+	</bean>
+	<bean id="trade.write" parent="trade.dbcp" class="com.alibaba.druid.pool.DruidDataSource">
+		<property value="${trade.write.url}" name="url" />
+		<property value="${trade.write.username}" name="username" />
+		<property value="${trade.write.password}" name="password" />
+	</bean>
+	<bean id="trade.sqlSessionFactoryBean.R" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="trade.read" />
+		<property name="configLocation" value="classpath:META-INF/mybatis/mybatis-config.xml"/>
+		<property name="mapperLocations">
+			<array>
+				<value>classpath*:mapping/trade/**/read/*Mapper.xml</value>
+			</array>
+		</property>
+	</bean>
+	<bean id="trade.sqlSessionFactoryBean.W" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="trade.write" />
+		<property name="configLocation" value="classpath:META-INF/mybatis/mybatis-config.xml"/>
+		<property name="mapperLocations">
+			<array>
+				<value>classpath*:mapping/trade/**/write/*Mapper.xml</value>
+			</array>
+		</property>
+	</bean>
+	<bean id="trade.mapperScannerConfigurer.R" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.pzj.trade.finance.read;com.pzj.trade.merch.read;com.pzj.trade.order.read;com.pzj.trade.payment.read;com.pzj.trade.confirm.read;com.pzj.core.trade.refund.read;com.pzj.core.trade.export.read;com.pzj.core.trade.book.dao.read;com.pzj.core.trade.log.dao.read;com.pzj.core.trade.voucher.read"/>
+		<property name="sqlSessionFactoryBeanName" value="trade.sqlSessionFactoryBean.R"/>
+	</bean>
+	<bean id="trade.mapperScannerConfigurer.W" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.pzj.trade.finance.wirte;com.pzj.trade.merch.write;com.pzj.trade.order.write;com.pzj.trade.payment.write;com.pzj.trade.confirm.write;com.pzj.core.trade.refund.write;com.pzj.core.trade.export.write;com.pzj.core.trade.book.dao.write;com.pzj.core.trade.log.dao.write;com.pzj.core.trade.voucher.write"/>
+		<property name="sqlSessionFactoryBeanName" value="trade.sqlSessionFactoryBean.W"/>
+	</bean>
+</beans>

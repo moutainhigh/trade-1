@@ -1,0 +1,63 @@
+#
+# 项目APIDOC.
+#
+com.pzj.trade.ack.service
+1. OrderAckService
+	#ack
+
+com.pzj.trade.book.service
+1. BookService
+	#createBook
+	#cancel
+	#editBooker
+	#audit
+	#refuse
+
+2. BookQueryService
+	#queryBooks
+	#queryBookByBookId
+	#querySparpreis
+	#validateCode
+
+3. BookTaskService
+	#cancelPreBook
+
+com.pzj.trade.clearing.service
+1. ClearingQueryService
+	#queryUnClearingRecordByPager
+
+com.pzj.trade.confirm.service
+1. ConfirmCodeService
+	#verify
+	#getMfcode
+
+2. ConfirmQueryService
+	#queryNotConfirmMerchOfAck
+	#overdueMerches
+
+3. ConfirmService
+	#confirm
+	#batchConfirm
+
+com.pzj.trade.export.service
+1. OrderExportService
+	#export
+	#exportForSaaS
+
+2. OrderExportQueryService
+	#queryExports
+	#verifyExportLog
+
+com.pzj.trade.financeCenter.service
+com.pzj.trade.order.service
+1. OrderService
+	#createOrderRemark
+	#updateOrderRemark
+	#createMultilevelOrder[17-06-08]
+
+
+com.pzj.trade.payment.service
+com.pzj.trade.refund.service
+com.pzj.trade.sms.service
+com.pzj.trade.withdraw.service
+com.pzj.trade.voucher.service

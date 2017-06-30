@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.SettlementOrdersReadMapper">
+
+	<!-- 订单商品明细统计数据 -->
+    <select id="queryOrderTotalNum" resultType="com.pzj.trade.order.entity.OrderCountEntity">
+    select 
+    	count(DISTINCT  o.transaction_id) as order_num
+<!--     	sum(total_num) merch_num, -->
+<!-- 		sum(total_amount) amount -->
+    from
+        t_order as o
+    <include refid="where_condition_by_detail" />
+    </select>
+    
+    
+	<!-- 查询订单id总数-->
+    <select id="queryOrderIds" resultType="String">
+    select 
+     DISTINCT  o.transaction_id
+    from
+        t_order as o
+    <include refid="where_condition_by_detail" />
+    	order by
+			o.create_time desc
+		limit #{page_index},#{page_size}
+    </select>
+    
+	<!-- 查询商品订单明细，按用户区分-->
+    <select id="queryOrderMerchsByUser" resultType="com.pzj.trade.order.entity.SettlementOrderMerchDetailEntity">
+		SELECT
+				a.transaction_id,
+				a.user_id,
+				a.sale_price,
+				a.after_rebate_amount,
+				a.purch_price,
+				a.order_level,
+				a.order_status,
+				a.create_time,
+				a.pay_time,
+				a.confirm_time,
+				a.order_id,
+				a.version,
+				a.merch_id,
+				a.merch_name,
+				a.total_num,
+				a.sku_name,
+				a.product_id,
+				a.refund_num,
+				a.osupplier_id
+		FROM
+			(
+				SELECT
+					o.transaction_id,
+					reseller_id AS user_id,
+					s.price AS purch_price,
+					s.after_rebate_amount,
+					p.price AS sale_price,
+					o.order_level,
+					o.order_status,
+					o.create_time,
+					o.pay_time,
+					o.confirm_time,
+					o.order_id,
+					o.version,
+					m.merch_id,
+					m.merch_name,
+					m.total_num,
+					m.sku_name,
+					m.product_id,
+					m.refund_num,
+					m.supplier_id AS osupplier_id
+				FROM
+					t_order o,
+					t_order_merch m,
+					t_order_strategy s,
+					t_order_strategy p
+		      <include refid="where_condition_user" />
+				UNION
+					SELECT
+						o.transaction_id,
+						o.supplier_id AS user_id,
+						s.price AS sale_price,
+						s.after_rebate_amount,
+						s.price purch_price,
+						o.order_level,
+						o.order_status,
+						o.create_time,
+						o.pay_time,
+						o.confirm_time,
+						o.order_id,
+						o.version,
+						m.merch_id,
+						m.merch_name,
+						m.total_num,
+						m.sku_name,
+						m.product_id,
+						m.refund_num,
+						m.supplier_id AS osupplier_id
+					FROM
+						t_order o,
+						t_order_merch m,
+						t_order_strategy s,
+						t_order_strategy p
+		           <include refid="where_condition_user" />
+		           	AND o.order_level = 1
+				) a 
+		ORDER BY a.create_time, a.transaction_id, a.order_level
+    </select>
+    
+
+	<!-- 订单商品明细列表查询 -->
+    <select id="queryOrdersByScrollData" resultType="com.pzj.trade.order.entity.OrderMerchDetailEntity">
+        select
+        	o.order_id,
+        	o.transaction_id,
+			o.order_status,
+			o.create_time,
+			o.pay_time,
+			o.confirm_time,
+			o.payer_id,
+			o.reseller_id,
+			o.version
+        from
+        	t_order as o
+		<include refid="where_condition_by_detail" />
+		order by
+			o.create_time desc
+		limit #{page_index},#{page_size}
+    </select>
+
+	<sql id="where_condition_by_detail">
+	<where>
+		
+		  o.order_status in (10,30,40)
+		<if test="param.orderId != null">
+		   and  	o.order_id = #{param.orderId}
+		</if>
+		<if test="param.transaction_id != null">
+		  and  	o.transaction_id = #{param.transaction_id}
+		</if>
+		<if test="param.payStartTime != null">
+			<![CDATA[ and o.pay_time >= #{param.payStartTime}]]>
+		</if>
+		<if test="param.payEndTime != null">
+			<![CDATA[ and o.pay_time <= #{param.payEndTime}]]>
+		</if>
+		<if test="param.checkStartTime != null">
+			<![CDATA[ and o.confirm_time >= #{param.checkStartTime}]]>
+		</if>
+		<if test="param.checkEndTime != null">
+			<![CDATA[ and o.confirm_time <= #{param.checkEndTime}]]>
+		</if>
+		<if
+			test="param.transaction_ids != null  and param.transaction_ids.size()>0">
+			and o.transaction_id in
+			<foreach collection="param.transaction_ids" item="transaction_id"
+				separator="," open="(" close=")">
+				#{transaction_id}
+			</foreach>
+		</if>
+	</where>
+	</sql>
+	
+    <sql id="where_condition_user">
+		<where>
+			o.transaction_id = m.transaction_id
+			AND o.order_id = s.order_id
+			AND s.merch_id = m.merch_id
+			AND p.order_id = o.p_order_id
+			AND p.merch_id = m.merch_id
+		    AND o.order_status in (10,30,40)
+			<if test="param.orderId != null">
+			   and 	o.order_id = #{param.orderId}
+			</if>
+			<if test="param.transaction_id != null">
+			  and  	o.transaction_id = #{param.transaction_id}
+			</if>
+			<if test="param.payStartTime != null">
+				<![CDATA[ and o.pay_time >= #{param.payStartTime}]]>
+			</if>
+			<if test="param.payEndTime != null">
+				<![CDATA[ and o.pay_time <= #{param.payEndTime}]]>
+			</if>
+			<if test="param.checkStartTime != null">
+				<![CDATA[ and o.confirm_time >= #{param.checkStartTime}]]>
+			</if>
+			<if test="param.checkEndTime != null">
+				<![CDATA[ and o.confirm_time <= #{param.checkEndTime}]]>
+			</if>
+			<if
+				test="param.transaction_ids != null  and param.transaction_ids.size()>0">
+				and o.transaction_id in
+				<foreach collection="param.transaction_ids" item="transaction_id"
+					separator="," open="(" close=")">
+					#{transaction_id}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+
+	
+	
+</mapper>

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.trade.payment.write.CashPostalWriteMapper" >
+
+	<select id="getCashPostalEntityForWithdraw" resultType="com.pzj.trade.payment.entity.CashPostalEntity">
+		select postal_id,
+			account_id,
+			target_postal_money,
+			postal_money,
+			postal_status,
+			create_time,
+			now() as update_time
+		from t_cash_postal 
+		where account_id=#{account_id}
+		order by create_time desc
+		limit 1 for update
+	</select>
+	<select id="getCashPostalEntityByIdForUpdate" resultType="com.pzj.trade.payment.entity.CashPostalEntity">
+		select postal_id,
+			account_id,
+			target_postal_money,
+			postal_money,
+			postal_status
+		from t_cash_postal where postal_id=#{postal_id}
+		for update
+	</select>
+	<select id="getTakenOrderEntityNotlock" resultType="com.pzj.trade.payment.entity.TakenOrderEntity">
+		select taken_id
+			,order_id
+			,account_id
+			,deal_id
+			,pay_type
+			,taken_status
+			,can_postal_money
+			,postal_money
+			from t_taken_order
+			where order_id=#{order_id} and account_id=#{account_id}
+	</select>
+	<select id="getCashPostallistByAccountId" resultType="com.pzj.trade.payment.entity.CashPostalEntity">
+		select postal_id,
+			account_id,
+			target_postal_money,
+			postal_money,
+			postal_status
+		from t_cash_postal where account_id=#{account_id} and postal_status=#{postal_status}
+	</select>
+	<select id="getWithdrawOrderFlowList" resultType="com.pzj.trade.payment.entity.WithdrawOrderFlow">
+		select 
+			flow_id 
+			,order_id
+			,withdraw_id
+			,refund_id
+			,refund_money
+			,flow_status
+			,create_time
+			,update_time
+			from t_withdraw_order_flow 
+		where withdraw_id=#{withdrawId} and flow_status=#{flowStatus}
+	</select>
+	<select id="getTakenOrderEntityForUpdate" resultType="com.pzj.trade.payment.entity.TakenOrderEntity">
+		select taken_id
+			,order_id
+			,account_id
+			,deal_id
+			,pay_type
+			,taken_status
+			,can_postal_money
+			,postal_money
+			from t_taken_order
+			where order_id=#{order_id} and account_id=#{account_id}
+			for update
+	</select>
+	
+	
+	<select id="getThirdRecordOfDrawing" resultType="com.pzj.trade.payment.entity.ThirdTradingRecordEntiry">
+		select pay_id ,
+			object_id,
+			deal_id,
+			real_amount,refund_amount,seller_email
+		from tbl_biz_trading_record
+		where pay_id=#{order_id} and object_id=#{account_id}
+	</select>
+
+	<select id="searchTakenMoneyForAccount" resultType="java.util.Map">
+		select
+			sum(can_postal_money-postal_money) as postalmoney
+		from
+			t_taken_order
+		where
+			account_id = #{account_id}
+		and
+			taken_status = #{taken_status}
+	</select>
+
+	<select id="getTakenOrderListForAccount" resultType="com.pzj.trade.payment.entity.TakenOrderEntity">
+		select
+			taken_id,
+			account_id,
+			order_id,
+			deal_id,
+			pay_type,
+			taken_status,
+			can_postal_money,
+			postal_money
+		from
+			t_taken_order
+		where
+			account_id = #{account_id}
+		and
+			taken_status = #{taken_status}
+		and
+			taken_id > #{last_taken_id}
+	</select>
+
+	<select id="getOrderListByOrderIds">
+		select
+			order_id,
+			transaction_id,
+			p_order_id,
+			pay_account_id,
+			sec_reseller_id,
+			guide_id,
+			reseller_agent_id,
+			order_status,
+			total_amount,
+			refund_amount,
+			total_num,
+			checked_num,
+			refund_num,
+			supplier_settlement_mode,
+			order_type,
+			create_time,
+			pay_time,
+			confirm_time
+		from
+			t_order
+		where 
+		<foreach collection="orderidlist" item="order_id" index="index" separator=" or ">
+			order_id=#{order_id}
+		</foreach>
+	</select>
+	<!-- 分割线 -->
+	<insert id="insertTakenEntity" parameterType="com.pzj.trade.payment.entity.TakenOrderEntity" useGeneratedKeys="true" keyProperty="taken_id">
+		insert into t_taken_order(
+			order_id
+			,account_id
+			,deal_id
+			,pay_type
+			,taken_status
+			,can_postal_money
+			,postal_money
+			,create_time
+			,update_time
+		)
+		values (
+			#{order_id}
+			,#{account_id}
+			,#{deal_id}
+			,#{pay_type}
+			,#{taken_status}
+			,#{can_postal_money}
+			,#{postal_money}
+			,sysdate()
+			,sysdate()
+		)
+	</insert>
+	<insert id="insertWithdrawOrderFlow">
+		<foreach collection="flowlist" item="flow" index="index" separator=";">
+			insert into t_withdraw_order_flow(
+				order_id,
+				withdraw_id,
+				refund_id,
+				refund_money,
+				flow_status,
+				create_time,
+				update_time
+			) values(
+				#{flow.order_id},
+				#{flow.withdraw_id},
+				#{flow.refund_id},
+				#{flow.refund_money},
+				#{flow.flow_status},
+				sysdate(),
+				sysdate()
+			)
+		</foreach>
+	</insert>
+	<update id="updateWithDrawOrderFlow">
+		update t_withdraw_order_flow
+			set flow_status=#{flow_status}
+			where flow_id=#{flow_id}
+	</update>
+	<update id="updateCashPostalMoney">
+		update t_cash_postal
+			set postal_money=postal_money+#{change_money},
+				postal_status=#{postal_status},
+				update_time=sysdate()
+			where postal_id=#{postal_id}
+	</update>
+
+	<!-- 记录提现记录. -->
+	<insert id="insertCashPostalEntity" parameterType="com.pzj.trade.payment.entity.CashPostalEntity" useGeneratedKeys="true" keyProperty="postal_id">
+		insert into t_cash_postal(
+			account_id,
+			target_postal_money,
+			settlement_sign_id,
+			postal_money,
+			postal_status,
+			withdraw_type,
+			create_time,
+			update_time
+		) values(
+			#{account_id},
+			#{target_postal_money},
+			#{settlement_sign_id},
+			#{postal_money},
+			#{postal_status},
+			#{withdraw_type},
+			sysdate(),
+			sysdate()
+		)
+	</insert>
+
+	<!-- 更新订单对应的提现记录. -->
+	<update id="updateTakenStatusByOrderId">
+		update
+			t_taken_order
+		set
+			taken_status=#{taken_status},
+			update_time=sysdate()
+		where 
+			order_id=#{order_id}
+	</update>
+
+	<update id="updateTakenStatus">
+		update t_taken_order
+			set taken_status=#{taken_status},
+				postal_money=postal_money+#{taken_money},
+				update_time=sysdate()
+		where order_id=#{order_id}
+	</update>
+</mapper>

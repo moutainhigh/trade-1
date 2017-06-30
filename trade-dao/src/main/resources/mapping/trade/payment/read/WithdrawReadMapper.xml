@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.trade.payment.read.WithdrawReadMapper" >
+<!-- 根据支付流水ID查询支付流水记录. -->
+	<select id="queryWithdrawByCondition" resultType="com.pzj.trade.payment.entity.CashPostalEntity">
+		select 
+			postal_id,
+			account_id,
+			target_postal_money,
+			postal_money,
+			postal_status,
+			withdraw_type,
+			create_time,
+			update_time
+		from t_cash_postal 
+		where account_id=#{param.accountId}
+		<if test="param.startTime!=null">
+			and create_time &gt;= #{param.startTime}
+		</if>
+		<if test="param.endTime!=null">
+			and create_time &lt; #{param.startTime}
+		</if>
+		order by create_time desc
+		limit #{pageIndex},#{pageSize}
+	</select>
+	
+	<select id="queryWithdrawNumByCondition" resultType="int">
+		select
+			count(postal_id)
+		from t_cash_postal
+		where account_id=#{param.accountId}
+		<if test="param.startTime!=null">
+			and create_time &gt;= #{param.startTime}
+		</if>
+		<if test="param.endTime!=null">
+			and create_time &lt; #{param.endTime}
+		</if>
+	</select>
+	<select id="queryWithdrawDetail" resultType="com.pzj.trade.order.entity.OrderListEntity">
+		select
+		transaction_id,
+		order_status,
+		total_amount,
+		total_num,
+		refund_amount,
+		refund_num,
+		create_time,
+		confirm_time
+		from
+		t_order
+		where ((reseller_id=#{param.accountId} and order_level!=1)
+		 or (supplier_id=#{param.accountId} and order_level=1))
+		<if test="param.startTime!=null">
+			and create_time &gt;= #{param.startTime}
+		</if>
+		<if test="param.endTime!=null">
+			and create_time &lt; #{param.endTime}
+		</if>
+		order by create_time desc
+		limit #{pageIndex},#{pageSize}
+	</select>
+	<select id="queryWithdrawDetailNum" resultType="int">
+		select
+		count(transaction_id)
+		from t_order
+		where ((reseller_id=#{param.accountId} and order_level!=1)
+		 or (supplier_id=#{param.accountId} and order_level=1))
+		<if test="param.startTime!=null">
+			and create_time &gt;= #{param.startTime}
+		</if>
+		<if test="param.endTime!=null">
+			and create_time &lt; #{param.endTime}
+		</if>
+	</select>
+</mapper>

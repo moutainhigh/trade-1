@@ -1,0 +1,42 @@
+{
+  "bookType": 1,
+  "resellerId": 2216619741563734,
+  "operatorId": 4072055830478849,
+  "supplierId": 2216619741563734,
+  "travelDate": 1498205965321,
+  "spuId": 865455839007420416,
+  "touristSourceCountry": "",
+  "touristSourceProvince": "",
+  "touristSourceCity": "",
+  "contactee": {
+    "contactee": "",
+    "contactMobile": ""
+  },
+  "filledModelList": [],
+  "tourists": [
+    {
+      "productId": 865463202804346880,
+      "idcardNo": ""
+    },
+    {
+      "productId": 865463202804346880,
+      "idcardNo": ""
+    }
+  ],
+  "products": [
+    {
+      "strategyId":867571447857098753,
+      "strategyRelationId": 867571935482687490,
+      "parentUserId": 4072055830478849,
+      "subUserId": 2216619741563734,
+      "productId": 865463202804346880,
+      "scenicId": 814314939503448064,
+      "buyNum": 2,
+      "seats": [
+        4020992663879799,
+        4020992663879830
+      ]
+    }
+  ],
+  "checkinPoints":[865456383734263808]
+}

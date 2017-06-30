@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.voucher.read.VoucherDockInfoEntityReadMapper" >
+  <resultMap id="BaseResultMap" type="com.pzj.voucher.entity.VoucherDockInfoEntity" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="transaction_id;" property="transactionId;" jdbcType="BIGINT" />
+    <result column="external_order_id" property="externalOrderId" jdbcType="VARCHAR" />
+    <result column="auxiliary_code" property="auxiliaryCode" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, transaction_id, external_order_id, auxiliary_code
+  </sql>
+ 
+   <select id="queryVoucherDockInfoEntityByTransactionId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_voucher_dock_info
+    where transaction_id = #{transactionId,jdbcType=BIGINT}
+  </select>
+</mapper>

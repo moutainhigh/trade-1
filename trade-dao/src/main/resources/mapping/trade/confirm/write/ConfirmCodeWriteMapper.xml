@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.confirm.write.ConfirmCodeWriteMapper">
+
+	<!-- 根据商品和订单获取待核销的商品. -->
+	<select id="queryConfirmCodeByMfCode" resultType="com.pzj.trade.confirm.entity.ConfirmCodeEntity">
+		select
+			code_id,
+			mf_code,
+			transaction_id,
+			order_id,
+			merch_id,
+			supplier_id,
+			code_state
+		from
+			t_mftour_code
+		where mf_code = #{mfcode} 
+		<if test="supplierId &gt; 0">
+			and supplier_id = #{supplierId,jdbcType=BIGINT}
+		</if>
+		order by create_time desc
+	</select>
+
+	<!-- 更新核销码状态. -->
+	<update id="updateConfirmCodeStateByOrderAndMerchId">
+		<foreach collection="codes" item="code" index="index" separator=";">
+			update
+				t_mftour_code
+			set
+				code_state = #{code.code_state},
+				source = #{code.source},
+				update_time = #{code.checkTime}
+			where
+				mf_code = #{code.mf_code}
+		</foreach>
+	</update>
+	
+</mapper>

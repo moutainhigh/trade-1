@@ -1,0 +1,25 @@
+/target/
+bin/
+
+.idea/
+*.iml
+.svn
+/.svn/
+.settings/
+.classpath
+.DS_Store
+.project
+
+/logs/
+
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+disconf/
+/trade-service/src/test/resources/.gitignore

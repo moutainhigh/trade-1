@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.voucher.write.VoucherWriteMapper">
+
+	<!-- ~~~~~~~~~~~~~~~~~~~~ select  ~~~~~~~~~~~~~~~~~~~~ -->
+	<sql id="voucher_base_columns">
+		select
+			voucher_id,
+			transaction_id,
+			voucher_content,
+			supplier_id,
+			voucher_state,
+			voucher_category,
+			show_start_time,
+			start_time,
+			expire_time
+		from
+			t_voucher_base
+	</sql>
+	<!-- 根据交易流水号查询对应的凭证信息. -->
+	<!-- <select id="queryVoucherByTransactionId" resultType="com.pzj.core.trade.voucher.entity.VourEntity">
+		<include refid="voucher_base_columns" />
+		where
+			transaction_id = #{transaction_id}
+	</select> -->
+	
+	<!-- 根据凭证ID查询对应的凭证信息. -->
+	<select id="queryVoucherById" resultType="com.pzj.core.trade.voucher.entity.VourEntity">
+		<include refid="voucher_base_columns" />
+		where
+			voucher_id = #{voucher_id}
+	</select>
+	<!-- 取凭证的开始、有效期时间点. -->
+	<select id="queryVoucherTimePointByVourId" resultType="com.pzj.core.trade.voucher.entity.VoucherTimeEntity">
+		select
+			start_time,
+			expire_time
+		from
+			t_voucher_base
+		where
+			voucher_id = #{voucher_id}
+	</select>
+
+	<!-- ~~~~~~~~~~~~~~~~~~~~ insert, update  ~~~~~~~~~~~~~~~~~~~~ -->
+	<insert id="insertSelective" useGeneratedKeys="true"
+		keyProperty="voucherId" parameterType="com.pzj.voucher.entity.VoucherEntity">
+		<selectKey resultType="java.lang.Long" order="AFTER"
+			keyProperty="voucherId">
+			SELECT LAST_INSERT_ID() AS voucherId
+		</selectKey>
+		insert into t_voucher_base
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="voucherId != null">
+				voucher_id,
+			</if>
+			<if test="voucherContent != null">
+				voucher_content,
+			</if>
+			<if test="voucherContentType != null">
+				voucher_content_type,
+			</if>
+			<if test="startTime != null">
+				start_time,
+			</if>
+			<if test="expireTime != null">
+				expire_time,
+			</if>
+			<if test="showStartTime != null">
+				show_start_time,
+			</if>
+			<if test="showEndTime != null">
+				show_end_time,
+			</if>
+			<if test="voucherState != null">
+				voucher_state,
+			</if>
+			<if test="voucherCategory != null">
+				voucher_category,
+			</if>
+			<if test="supplierId != null">
+				supplier_id,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="voucherId != null">
+				#{voucherId,jdbcType=BIGINT},
+			</if>
+			<if test="voucherContent != null">
+				#{voucherContent,jdbcType=VARCHAR},
+			</if>
+			<if test="voucherContentType != null">
+				#{voucherContentType,jdbcType=TINYINT},
+			</if>
+			<if test="startTime != null">
+				#{startTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="expireTime != null">
+				#{expireTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="showStartTime != null">
+				#{showStartTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="showEndTime != null">
+				#{showEndTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="voucherState != null">
+				#{voucherState,jdbcType=TINYINT},
+			</if>
+			<if test="voucherCategory != null">
+				#{voucherCategory,jdbcType=TINYINT},
+			</if>
+			<if test="supplierId != null">
+				#{supplierId,jdbcType=BIGINT},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 更新凭证状态及核销信息. -->
+	<update id="updateVouchConfirmStatusById">
+		update t_voucher_base
+		<set>
+			voucher_state = #{state},
+			voucher_time = #{checkTime}
+		</set>
+		<where>
+			voucher_id = #{voucher_id}
+		</where>
+	</update>
+	
+	<!-- 更新凭证值. -->
+	<update id="updateContextByVoucherId">
+		update
+			t_voucher_base
+		set
+			voucher_content = #{content}
+		where
+			voucher_id = #{voucher_id}
+	</update>
+	
+	<!-- 根据凭证ID查询对应的凭证信息. -->
+	<select id="queryVoucherForConfirmLockById" resultType="com.pzj.core.trade.voucher.entity.VourEntity">
+		<include refid="voucher_base_columns" />
+		where
+			voucher_id = #{voucher_id} for update
+	</select>
+</mapper>

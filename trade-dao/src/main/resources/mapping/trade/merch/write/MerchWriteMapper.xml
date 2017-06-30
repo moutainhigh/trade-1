@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.merch.write.MerchWriteMapper">
+
+	<sql id="merchinfo_column">
+		merch_id,
+		root_merch_id,
+		order_id,
+		transaction_id,
+		is_cleaned,
+		is_refunding,
+		merch_state,
+		product_id,
+		merch_type,
+		merch_name,
+		vour_type,
+		verification_type,
+		clear_type,
+		p_product_id,
+		product_varie,
+		channel_id,
+		strategy_id,
+		voucher_id,
+		total_num,
+		check_num,
+		refund_num,
+		refunding_num,
+		price,
+		settlement_price,
+		refund_amount,
+		create_time,
+		update_time,
+		effec_time,
+		start_time,
+		expire_time
+	</sql>
+
+	<!-- 通过商品ID更新商品为已清算 -->
+	<update id="updateMerchAsCleaned">
+		update
+		t_order_merch
+		set
+		is_cleaned = 1,
+		update_time =
+		sysdate()
+		where
+		merch_id = #{merchId}
+	</update>
+
+	<!-- 通过交易ID更新订单商品状态. -->
+	<update id="updateMerchStatusByTransactionId">
+		update
+			t_order_merch
+		set
+			merch_state = #{merch_state},
+			update_time = sysdate()
+		where
+			transaction_id = #{transaction_id}
+	</update>
+	<!-- 通过交易ID更新订单商品状态为待消费（已退款的除外）. -->
+	<update id="updateMerchStatusConsumeByTransactionId">
+		update
+		t_order_merch
+		set
+		merch_state = #{merch_state},
+		update_time = sysdate()
+		where
+		transaction_id = #{transaction_id}
+		and
+		merch_state = 4
+	</update>
+	<!-- 通过voucherID更新订单商品状态,用于二次确认. -->
+	<update id="updateMerchStatusByVoucherId">
+		update
+		t_order_merch
+		set
+		merch_state = #{merch_state}
+		where
+		voucher_id = #{voucher_id}
+		and merch_state=4
+	</update>
+	<!-- 通过交易ID更新订单商品状态和已检数量. -->
+	<update id="updateMerchStatusAndCheckNumByTransactionId">
+		update
+		t_order_merch
+		set
+		merch_state = #{merch_state},
+		check_num=total_num-refund_num,
+		update_time = sysdate()
+		where
+		transaction_id = #{transaction_id}
+	</update>
+
+	<!-- 通过订单ID更新订单商品状态. -->
+	<update id="updateMerchStatusByOrderId">
+		update
+		t_order_merch
+		set
+		merch_state = #{merch_state},
+		update_time = sysdate()
+		where
+		order_id = #{order_id}
+	</update>
+
+	<!-- 更新商品确认状态. -->
+	<update id="updateMerchStatusByMerchIds">
+		<foreach collection="merch_ids" item="merch_id" index="index"
+			separator=";">
+			update
+			t_order_merch
+			set
+			merch_state = #{merch_state},
+			check_num = total_num - refund_num,
+			update_time = sysdate()
+			where
+			merch_id = #{merch_id}
+		</foreach>
+	</update>
+	<update id="updateMerchNumForConsumeRollback">
+		update
+		t_order_merch
+		set check_num=total_num-refund_num
+		update_time = sysdate()
+		where
+		transaction_id = #{transactionId}
+	</update>
+	<!-- 保存订单商品信息. -->
+	<insert id="insertMerchEntity" parameterType="com.pzj.trade.merch.entity.MerchEntity">
+		insert into t_order_merch (
+		merch_id,
+		root_merch_id,
+		order_id,
+		transaction_id,
+		merch_state,
+		product_id,
+		merch_type,
+		merch_name,
+		vour_type,
+		clear_type,
+		p_product_id,
+		product_varie,
+		channel_id,
+		strategy_id,
+		voucher_id,
+		total_num,
+		check_num,
+		refund_num,
+		price,
+		settlement_price,
+		refund_amount,
+		create_time,
+		update_time,
+		effec_time,
+		start_time,
+		expire_time
+		)values
+		<foreach collection="merchs" item="merch" index="index"
+			separator=",">
+			(
+			#{merch.merch_id},
+			#{merch.root_merch_id},
+			#{merch.order_id},
+			#{merch.transaction_id},
+			#{merch.merch_state},
+			#{merch.product_id},
+			#{merch.merch_type},
+			#{merch.merch_name},
+			#{merch.vour_type},
+			#{merch.clear_type},
+			#{merch.p_product_id},
+			#{merch.product_varie},
+			#{merch.channel_id},
+			#{merch.strategy_id},
+			#{merch.voucher_id},
+			#{merch.total_num},
+			#{merch.check_num},
+			#{merch.refund_num},
+			#{merch.price},
+			#{merch.settlement_price},
+			#{merch.refund_amount},
+			sysdate(),
+			sysdate(),
+			#{merch.effec_time},
+			#{merch.start_time},
+			#{merch.expire_time}
+			)
+		</foreach>
+	</insert>
+
+<!-- 保存多次分销订单商品信息. -->
+	<insert id="insertMultiMerchEntity" parameterType="com.pzj.trade.merch.entity.MerchEntity">
+		insert into t_order_merch (
+		merch_id,
+		root_merch_id,
+		order_id,
+		transaction_id,
+		merch_state,
+		product_id,
+		merch_type,
+		merch_name,
+		sku_name,
+		vour_type,
+		verification_type,
+		auto_confirm,
+		supplier_id,
+		p_product_id,
+		product_varie,
+		voucher_id,
+		total_num,
+		price,
+		create_time,
+		update_time,
+		start_time,
+		expire_time,
+		show_start_time,
+		show_end_time,
+		version
+		)values
+		<foreach collection="merchs" item="merch" index="index"
+			separator=",">
+			(
+			#{merch.merch_id},
+			#{merch.root_merch_id},
+			#{merch.order_id},
+			#{merch.transaction_id},
+			#{merch.merch_state},
+			#{merch.product_id},
+			#{merch.merch_type},
+			#{merch.merch_name},
+			#{merch.sku_name},
+			#{merch.vour_type},
+			#{merch.verification_type,},
+			#{merch.auto_confirm},
+			#{merch.supplier_id},
+			#{merch.p_product_id},
+			#{merch.product_varie},
+			#{merch.voucher_id},
+			#{merch.total_num},
+			#{merch.price},
+			sysdate(),
+			sysdate(),
+			#{merch.start_time},
+			#{merch.expire_time},
+			<if test="merch.show_start_time !=null">
+				#{merch.show_start_time},
+				#{merch.show_end_time},
+			</if>
+			<if test="merch.show_start_time ==null">
+				'0000-00-00 00:00:00',
+				'0000-00-00 00:00:00',
+			</if>
+			
+			#{merch.version}
+			)
+		</foreach>
+	</insert>
+	<update id="updateMerchToBeRefund">
+		<foreach collection="merch_ids" item="merch_id" index="index"
+			separator=";">
+			update
+			t_order_merch
+			set
+			merch_state = #{merch_state},
+			update_time = sysdate()
+			where
+			root_merch_id = #{merch_id}
+		</foreach>
+	</update>
+
+	<update id="updateMerchToFinishiRefund">
+		update
+		t_order_merch
+		set is_refunding=0
+		where merch_id in (
+		<foreach collection="merchIds" item="merchid" index="index"
+			separator=",">
+			#{merchid}
+		</foreach>
+		)
+	</update>
+
+	<update id="updateMerchOfRefund">
+		update t_order_merch set
+				refund_num=
+				#{refundModel.refundNum},
+				refund_amount=#{refundModel.refundAmount},
+				merch_state
+				=#{refundModel.merchState},
+				is_refunding=#{refundModel.isRefunding},
+				check_num=#{refundModel.checkNum}
+		where
+		merch_id=#{refundModel.merchId}
+	</update>
+	
+	<update id="updateMerchesOfRefund">
+		<foreach collection="refundModels" item="refundModel" index="index"
+			separator=";">
+			update t_order_merch set
+					refund_num=#{refundModel.refundNum},
+					refund_amount=#{refundModel.refundAmount},
+					merch_state=#{refundModel.merchState},
+					is_refunding=#{refundModel.isRefunding},
+					refunding_num=#{refundModel.refundingNum},
+					check_num=#{refundModel.checkNum}
+			where
+			merch_id=#{refundModel.merchId}
+		</foreach>
+	</update>
+	
+	<update id="updateMercheStatusOfRefundFinish">
+		update t_order_merch set
+			merch_state=5,
+			is_cleaned=1,
+			update_time=sysdate()
+		where order_id=#{orderId} and check_num>0;
+		update t_order_merch set
+			merch_state=3,
+			is_cleaned=1,
+			update_time=sysdate()
+		where order_id=#{orderId} and check_num=0;
+	</update>
+	<!-- 更新订单商品状态，商品从带消费，变成已消费 -->
+	<update id="updateOrderMerchStatus">
+		update t_order_merch
+		set merch_state=#{status}
+		where
+		merch_id=#{merchId} and transaction_id=#{transactionId}
+	</update>
+
+	<!-- 更新商品状态及数量, 数量和状态由业务系统指定. -->
+	<update id="updateMerchStatusAndNumByMerchId" parameterType="com.pzj.trade.merch.entity.MerchNumEntity">
+		<foreach collection="merchs" item="merch" index="index"
+			separator=";">
+			update t_order_merch
+			set
+			check_num = #{merch.checkNum},
+			merch_state =#{merch.merchState},
+			check_time=#{merch.checkTime}
+			where merch_id = #{merch.merchId}
+		</foreach>
+	</update>
+	
+	<!-- 确认商品是否可消费事件. -->
+	<select id="queryMerchByTransactionAlsoGroup" resultType="com.pzj.trade.merch.entity.MerchEffecTimeEntity">
+		select
+		merch_id,
+		order_id,
+		transaction_id,
+		effec_time,
+		voucher_id,
+		vour_type,
+		clear_type
+		from
+		t_order_merch
+		where
+		transaction_id = #{transactionId}
+		group by
+		product_id
+	</select>
+
+	<!-- 根据商品和订单获取待核销的商品. -->
+	<select id="queryConfirmMerch" resultType="com.pzj.trade.merch.entity.ConfirmMerchEntity">
+		select
+		merch_id,
+		order_id,
+		transaction_id,
+		is_refunding,
+		product_id,
+		merch_state,
+		effec_time,
+		voucher_id,
+		vour_type,
+		clear_type,
+		root_merch_id,
+		merch_state,
+		merch_type,
+		total_num,
+		check_num,
+		refund_num,
+		settlement_price,
+		auto_confirm,
+		version
+		from
+		t_order_merch
+		where
+		<if test="voucherId != null">
+			 voucher_id = #{voucherId}
+		</if>
+		<if test="transactionId != null">
+			and transaction_id = #{transactionId}
+		</if>
+	</select>
+	<select id="getMerchByMerchId" resultType="com.pzj.trade.merch.entity.MerchEntity">
+		select
+		<include refid="merchinfo_column" />
+		from
+		t_order_merch
+		where
+		merch_id=#{merch_id}
+	</select>
+	<!-- 根据顶层商品ID获取订单商品信息 -->
+	<select id="getMerchsByRootMerchId" resultType="com.pzj.trade.merch.entity.MerchEntity">
+		select
+		<include refid="merchinfo_column" />
+		from
+		t_order_merch
+		where
+		root_merch_id = #{rootMerchId}
+	</select>
+
+	<!-- 根据订单ID查询订单商品列表. -->
+	<select id="getMerchByOrderId" resultType="com.pzj.trade.merch.entity.MerchEntity">
+		select
+		<include refid="merchinfo_column" />
+		from
+		t_order_merch
+		where
+		order_id = #{order_id}
+	</select>
+
+	<select id="getMerchRefundOfOrder" resultType="com.pzj.trade.merch.entity.MerchEntity">
+		select
+		merch_id,
+		root_merch_id,
+		order_id,
+		transaction_id,
+		merch_state,
+		product_id,
+		p_product_id,
+		channel_id,
+		strategy_id,
+		voucher_id,
+		total_num,
+		check_num,
+		refund_num,
+		price,
+		refund_amount,
+		create_time,
+		update_time
+		from
+		t_order_merch
+		where transaction_id=#{transactionId} and merch_state in
+		(0,1,4) and (
+		<foreach collection="refundMerch" item="merch" index="index"
+			separator=" or ">
+			(root_merch_id=#{merch.merchandise_id})
+		</foreach>
+		)
+	</select>
+	
+	<select id="getRefundingMerchOfTrade" resultType="com.pzj.trade.merch.entity.MerchEntity">
+		select
+		merch_id,
+		root_merch_id,
+		order_id,
+		transaction_id,
+		merch_state,
+		product_id,
+		p_product_id,
+		channel_id,
+		strategy_id,
+		voucher_id,
+		total_num,
+		check_num,
+		refund_num,
+		price,
+		refund_amount,
+		create_time,
+		update_time
+		from
+		t_order_merch
+		where transaction_id=#{transactionId} and is_refunding=1
+	</select>
+
+
+	<select id="getMerchsByMerchIds"
+		resultType="com.pzj.core.trade.refund.entity.RefundMerchRequiredEntity">
+		select
+		merch_id as merchId,
+		root_merch_id ad rootMerchId,
+		order_id as
+		orderId,
+		merch_state as merchState,
+		product_id as productId,
+		voucher_id
+		as voucherId,
+		total_num as totalNum,
+		check_num as checkNum,
+		refund_num as
+		refundNum,
+		price as price,
+		refund_amount as refundAmount
+		from
+		t_order_merch
+		where merch_id in(
+		<foreach collection="merchIds" item="merchId" separator=",">
+			#{merchId}
+		</foreach>
+		)
+	</select>
+
+	<select id="getMerchByVoucherId" resultType="com.pzj.trade.merch.entity.MerchEntity">
+		select
+		<include refid="merchinfo_column" />
+		from
+		t_order_merch
+		where
+		voucher_id = #{voucherId}
+	</select>
+
+	<!-- 根据销售订单id获取对应的商品及数量信息. @author: YRJ. -->
+	<select id="queryMerchNumEntityByRootOrderId"
+		resultType="com.pzj.core.trade.refund.entity.RefundMerchRequiredEntity">
+		select
+		merch_id as merchId,
+		product_id as productId;
+		merch_state as merchState,
+		total_num as totalNum,
+		check_num as checkNum,
+		refund_num as refundNum,
+		total_amount as totalAmount
+		from
+		t_order_merch
+		where
+		order_id = #{orderId}
+	</select>
+
+	<!-- 通过交易ID更新商品为已清算 -->
+	<update id="updateCleanedByTransactionId">
+		update
+		t_order_merch
+		set
+		is_cleaned = 1,
+		update_time =
+		sysdate()
+		where
+		transaction_id = #{transaction_id}
+	</update>
+
+	<!-- 根据销售商品ID获取采购商品信息 -->
+	<select id="getPurchaseMerchBySellMerchId" resultType="com.pzj.trade.merch.entity.MerchEntity" parameterType="java.lang.String">
+		select
+			merch_id as merch_id,
+			root_merch_id as
+			root_merch_id,
+			order_id as order_id,
+			product_id as product_id,
+			voucher_id as voucher_id,
+			price as price,
+			merch_state as merch_state
+		from
+			t_order_merch
+		where
+			root_merch_id = #{sellMerchId}
+		and
+			merch_id != #{sellMerchId}
+	</select>
+
+	<select id="getMerchesByIds" resultType="com.pzj.trade.merch.entity.MerchEntity"
+		parameterType="java.util.List">
+		select
+		merch_id as merch_id,
+		order_id as order_id,
+		root_merch_id as
+		root_merch_id,
+		product_id as product_id,
+		voucher_id as voucher_id,
+		merch_state as merch_state
+		from
+		t_order_merch
+		where
+		merch_id in (
+		<foreach collection="merchIds" item="merchId" separator=",">
+			#{merchId}
+		</foreach>
+		)
+	</select>
+
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.voucher.write.VoucherConfirmWriteMapper">
+
+	<!-- 根据凭证ID获取对应的演艺门票的检票点信息 -->
+	<select id="queryVoucherConfirmByVoucherId" resultType="com.pzj.core.trade.voucher.entity.VoucherConfirmNumEntity">
+		select
+			id,
+			voucher_id,
+			child_product_id as ticket_point,
+			used_times,
+			max_use_times
+		from
+			t_voucher_confirm
+		where
+			voucher_id = #{voucher_id}
+	</select>
+	
+	<update id="updateVoucherConfirmUsedTimes">
+		update t_voucher_confirm
+		set used_times = used_times + #{num},
+		confirm_time=#{checkTime}
+		<where>
+			voucher_id = #{voucherId}
+			<if test="productId != null">
+				and product_id= #{productId}
+			</if>
+			<if test="childProductId != null">
+				and child_product_id= #{childProductId}
+			</if>
+		</where>
+	</update>
+
+	<insert id="batchInsertVoucherConfirm" parameterType="java.util.List">
+		insert into t_voucher_confirm (voucher_id, child_product_id,
+		product_id, supplier_id, used_times,
+		max_use_times)
+		values
+		<foreach collection="list" item="item" separator=",">
+			(
+			#{item.voucherId,jdbcType=BIGINT},
+			#{item.childProductId,jdbcType=BIGINT},
+			#{item.productId,jdbcType=BIGINT},
+			#{item.supplierId,jdbcType=BIGINT},
+			#{item.usedTimes,jdbcType=TINYINT},
+			#{item.maxUseTimes,jdbcType=TINYINT}
+			)
+		</foreach>
+	</insert>
+</mapper>

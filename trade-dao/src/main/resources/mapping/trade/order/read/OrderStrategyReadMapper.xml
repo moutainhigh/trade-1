@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.OrderStrategyReadMapper">
+
+	<!-- 根据订单ID获取订单信息. -->
+	<select id="getOrderStrategys" resultType="com.pzj.trade.order.entity.OrderStrategyEntity">
+		select
+		order_id as orderId,
+		merch_id as merchId,
+		channel_id as channelId,
+		strategy_id as strategyId,
+		discount_amount as discountAmount,
+		discount_type as discountType,
+		discount_state as discountState,
+		discount_remark as discountRemark,
+		create_time as createTime,
+		after_rebate_amount,
+		advice_price,
+		settlement_price,
+		rebate_method,
+		rebate_settlement,
+		price
+		from
+		t_order_strategy
+		where
+		order_id = #{order_id}
+		<if test="merch_id != null and merch_id !=''">
+			and merch_id=#{merch_id}
+		</if>
+	</select>
+
+
+	<select id="getRefundMerchStrategys" resultType="com.pzj.trade.order.model.RefundMerchStrategyModel">
+		select
+		s.order_id as orderId,
+		s.merch_id as merchId,
+		o.transaction_id as
+		transactionId,
+		s.advice_price as advice_price,
+		s.settlement_price as
+		settlementPrice,
+		s.rebate_method as rebateMethod,
+		s.price as price,
+		s.after_rebate_amount as afterRebateAmount,
+		o.p_order_id as porderId,
+		o.payer_id as payerId,
+		o.supplier_id as supplierId,
+		o.reseller_id as
+		resellerId,
+		o.order_level as orderLevel,
+		o.pay_way as payWay,
+		o.sale_port as salePort
+		from t_order_strategy s left join t_order o on
+		s.order_id=o.order_id
+		where o.transaction_id=#{transactionId}
+		<if test="merchIds != null  and merchIds.size()>0">
+			and s.merch_id in
+			<foreach collection="merchIds" item="merchId" separator=","
+				open="(" close=")">
+				#{merchId}
+			</foreach>
+		</if>
+		order by o.order_level desc
+	</select>
+	<!-- 根据订单ID集合获取订单信息. -->
+	<select id="getOrderStrategyByOrders" resultType="com.pzj.trade.order.entity.OrderStrategyEntity">
+		select
+		order_id as orderId,
+		merch_id as merchId,
+		channel_id as channelId,
+		strategy_id as strategyId,
+		discount_amount as discountAmount,
+		discount_type as discountType,
+		discount_state as discountState,
+		discount_remark as discountRemark,
+		create_time as createTime,
+		advice_price,
+		settlement_price,
+		rebate_method,
+		rebate_settlement,
+		price,
+		after_rebate_amount
+		from
+		t_order_strategy o
+		<where>
+			<if test="order_ids != null  and order_ids.size()>0">
+				and o.order_id in
+				<foreach collection="order_ids" item="order_id" separator=","
+					open="(" close=")">
+					#{order_id}
+				</foreach>
+			</if>
+			<if test="merch_ids != null  and merch_ids.size()>0">
+				and o.merch_id in
+				<foreach collection="merch_ids" item="merch_id" separator=","
+					open="(" close=")">
+					#{merch_id}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="selectOrderRebates" parameterType="java.lang.String"
+		resultType="com.pzj.trade.order.entity.OrderRebateEntity">
+		select
+		order_id AS orderId,
+		merch_id AS merchId,
+		advice_price
+		AS advicePrice,
+		settlement_price AS settlementPrice,
+		rebate_method AS
+		rebateMethod,
+		rebate_settlement AS rebateSettlement,
+		price AS price,
+		after_rebate_amount AS afterRebateAmount
+		from t_order_strategy where
+		order_id=#{orderId}
+	</select>
+	
+	<select id="getOrderMerchAfterRebateStrategyId" resultType="java.lang.Long">
+		select strategy_id from t_order_strategy where order_id=#{orderId} and merch_id=#{merchId} and rebate_method != 1
+	</select>
+</mapper>		

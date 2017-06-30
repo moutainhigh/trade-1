@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://code.alibabatech.com/schema/dubbo
+    http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<dubbo:application name="trade-consumer" />
+	<dubbo:registry address="zookeeper://10.0.6.27:2181" check="false" file="false" />
+	<dubbo:protocol accesslog="false" />
+	<dubbo:consumer check="false" />
+
+	<dubbo:reference id="orderQueryService"
+		interface="com.pzj.trade.order.service.OrderQueryService" version="1.1"
+		check="false" retries="0" timeout="100000" url="dubbo://127.0.0.1:20880" />
+		
+	<dubbo:reference id="orderExportService"
+		interface="com.pzj.trade.export.service.OrderExportService" timeout="50000"
+		version="1.1" />
+
+	<dubbo:reference id="paymentRefundService"
+		interface="com.pzj.core.payment.service.RefundService" timeout="50000"
+		version="1.1" />
+	<dubbo:reference id="paymentPayService"
+		interface="com.pzj.core.payment.service.PayService" version="1.1" />
+	<dubbo:reference id="orderService"
+		interface="com.pzj.trade.order.service.OrderService" version="1.1"
+		timeout="50000"  url="localhost:20880"/>
+
+	<dubbo:reference id="withdrawQueryService"
+		interface="com.pzj.trade.withdraw.service.WithdrawQueryService" version="1.1"  url="dubbo://127.0.0.1:20880"/>
+	<dubbo:reference id="refundQueryService"
+		interface="com.pzj.trade.refund.service.RefundQueryService" version="1.1"  url="localhost:20880"/>
+	<dubbo:reference id="paymentService"
+		interface="com.pzj.trade.payment.service.PaymentService" version="1.1"
+		url="dubbo://127.0.0.1:20880" timeout="300000" />
+	<dubbo:reference id="cashPostalService"
+		interface="com.pzj.trade.withdraw.service.CashPostalService" version="1.1"  url="localhost:20880"/>
+	<dubbo:reference id="voucherService"
+		interface="com.pzj.voucher.service.VoucherService" version="1.1" />
+	<dubbo:reference id="accountBussinessService"
+		interface="com.pzj.settlement.balance.service.AccountBussinessService"
+		version="1.0" check="false" timeout="5000" retries="3" />
+
+	<dubbo:reference id="confirmService"
+		interface="com.pzj.trade.confirm.service.ConfirmService" version="1.1"
+		check="false" retries="0" timeout="100000" url="dubbo://127.0.0.1:20880" />
+
+	<dubbo:reference id="confirmCodeService"
+		interface="com.pzj.trade.confirm.service.ConfirmCodeService" version="1.1"  url="dubbo://127.0.0.1:20880"/>
+	<dubbo:reference id="orderAckService"
+		interface="com.pzj.trade.ack.service.OrderAckService" version="1.1"
+		check="false" timeout="5000" retries="3" url="localhost:20880" />
+
+	<!-- <dubbo:reference id="settlementCall" interface="com.pzj.settlement.base.facade.service.SettlementCall" 
+		version="1.0" check="false" timeout="5000" retries="3" registry="consumer-registry" 
+		/> -->
+
+	<dubbo:reference id="refundApplyService"
+		interface="com.pzj.trade.refund.service.RefundApplyService" version="1.1"
+		check="false" timeout="50000" retries="3" url="localhost:20880" />
+	<dubbo:reference id="refundAuditService"
+		interface="com.pzj.trade.refund.service.RefundAuditService" version="1.1"
+		check="false" timeout="50000" retries="3" url="localhost:20880" />
+	<dubbo:reference id="paymentTaskService"
+		interface="com.pzj.trade.payment.service.PaymentTaskService" version="1.1"
+		check="false" timeout="50000" retries="3" url="localhost:20880" />
+
+	<dubbo:reference id="refundService"
+		interface="com.pzj.trade.refund.service.RefundService" version="1.1"
+		check="false" timeout="50000" url="localhost:20880" />
+
+	<dubbo:reference id="orderExportQueryService"
+		interface="com.pzj.trade.export.service.OrderExportQueryService"
+		version="1.1" check="false" timeout="50000" url="dubbo://10.0.96.176:20880" />
+
+	<dubbo:reference id="transferAccountsService"
+		interface="com.pzj.trade.order.service.TransferAccountsService"
+		version="1.1" check="false" timeout="50000" url="dubbo://127.0.0.1:20880" />
+
+	<dubbo:reference id="orderValidateService"
+		interface="com.pzj.trade.order.service.OrderValidateService"
+		version="1.1" check="false" timeout="50000" url="dubbo://127.0.0.1:20880" />
+
+	<dubbo:reference id="cancelService"
+		interface="com.pzj.trade.order.service.CancelService" version="1.1"
+		url="dubbo://127.0.0.1:20880" timeout="300000" />
+	<!-- 财务中心 -->
+	<dubbo:reference id="financeCenterQueryService"
+		interface="com.pzj.trade.financeCenter.service.FinanceCenterQueryService" version="1.1"
+		url="dubbo://127.0.0.1:20880" timeout="30000000" />
+		
+</beans>

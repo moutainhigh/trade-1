@@ -1,0 +1,3 @@
+ALTER TABLE `t_refund_oper_log`
+MODIFY COLUMN `log_id`  bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键';
+

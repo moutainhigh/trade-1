@@ -1,0 +1,48 @@
+{
+  "resellerId": 2216619736563743,
+  "payerId": 2216619736563743,
+  "operatorId": 3121242274529281,
+  "bookId": "0",
+  "bookType": 0,
+  
+  "salePort": 7,
+  "vourType": 2,
+  "travelDate": 1501443080743,
+  
+  "travel": 100,
+  "travelDepartId": 0,
+  "travelDepartName": "",
+  "guideId": 123,
+  "guideIdName": "i am guide",
+  
+  "contactee": {
+    "contactee": "9wshopMulti",
+    "contactMobile": "18600000021",
+    "idcardNo": "111111133311111111"
+  },
+  "remark": "i am remark",
+  "products": [
+    {
+      "productId": 851694567296937984,
+      "productNum": 2,
+      "price": 100,
+      "strategyRelationId": 851720848722522113,
+      "parentUserId": 3214535729610753,
+      "subUserId": 2216619736563743
+    }
+  ],
+  "tourists": [
+    {
+      "productId": 851694567296937984,
+      "tourist": "chai",
+      "touristMobile": "18000000000",
+      "idcardNo": "1111221111111111113"
+    },
+    {
+      "productId": 851694567296937984,
+      "tourist": "chai2",
+      "touristMobile": "18000000000",
+      "idcardNo": "1111311111111111114"
+    }
+  ]
+}

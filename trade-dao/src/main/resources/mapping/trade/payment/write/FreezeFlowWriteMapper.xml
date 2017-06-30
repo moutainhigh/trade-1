@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.trade.payment.write.FreezeFlowWriteMapper" >
+	 
+	 <select id="getFreezeFlow" resultType="com.pzj.trade.payment.entity.FreezeFlowEntity">
+			select 
+				freeze_id,
+				order_id,
+				receive_type,
+				payer_id,
+				sign_id,
+				freeze_state,
+				balance_amount,
+				third_amount,
+				third_content,
+				create_time,
+				update_time
+			from 
+				t_freeze_flow
+			where 
+				order_id = #{order_id} and receive_type=#{receive_type} and freeze_state=#{freeze_state}
+		</select>
+		
+		<select id="getFreezingFlowBySignIdForRefund" resultType="com.pzj.trade.payment.entity.FreezeFlowEntity">
+			select 
+				freeze_id,
+				order_id,
+				payer_id,
+				receive_type,
+				sign_id,
+				freeze_state,
+				balance_amount,
+				third_amount,
+				create_time,
+				update_time
+			from 
+				t_freeze_flow
+			where 
+				sign_id = #{sign_id}
+		</select>
+
+	 <insert id="insertFreezeFlow" parameterType="com.pzj.trade.payment.entity.FreezeFlowEntity" useGeneratedKeys="true" keyProperty="freeze_id">
+		 insert into t_freeze_flow(
+				order_id,
+				sign_id,
+				receive_type,
+				payer_id,
+				freeze_state,
+				balance_amount,
+				third_amount,
+				create_time,
+				update_time
+				)
+		 values(
+				#{order_id},
+				#{sign_id},
+				#{receive_type},
+				#{payer_id},
+				#{freeze_state},
+				#{balance_amount},
+				#{third_amount},
+				sysdate(),
+				sysdate()
+		 )
+	 </insert>
+
+	 <!-- 更新付款流水. -->
+	 <update id="updateFreezeFlowStatus" >
+	 	update
+	 		t_freeze_flow
+	 	set
+	 		freeze_state = #{freeze_state},
+	 		update_time=sysdate()
+	 	where
+	 		order_id =  #{order_id}
+	 	and
+	 		sign_id=#{sign_id}
+	 </update>
+
+	<update id="updateFreezeFlowThirdContent">
+		update
+	 		t_freeze_flow
+	 	set
+	 		third_content = #{thirdContent},
+	 		update_time=sysdate()
+	 	where
+	 		freeze_id =  #{flowId}
+	
+	</update>
+</mapper>

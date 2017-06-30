@@ -1,0 +1,154 @@
+{
+    "bookType": 2,
+    "contactee": {
+        "contactMobile": "13436757292",
+        "contactee": "Mr.liang",
+        "idcardNo": "440982198302200019"
+    },
+    "deliveryCode": "123456",
+    "filledModelList": [
+        {
+            "attr_key": "contact_mobile",
+            "attr_value": "13436757292",
+            "group": "contact"
+        },
+        {
+            "attr_key": "contact_name",
+            "attr_value": "Mr.liang",
+            "group": "contact"
+        },
+        {
+            "attr_key": "contact_idcard",
+            "attr_value": "440982198302200019",
+            "group": "contact"
+        },
+        {
+            "attr_key": "delivery_addr_nation",
+            "attr_value": "中国",
+            "group": "delivery"
+        },
+        {
+            "attr_key": "delivery_addr_province",
+            "attr_value": "四川省",
+            "group": "delivery"
+        },
+        {
+            "attr_key": "delivery_addr_city",
+            "attr_value": "成都市",
+            "group": "delivery"
+        },
+        {
+            "attr_key": "delivery_addr_county",
+            "attr_value": "高新区",
+            "group": "delivery"
+        },
+        {
+            "attr_key": "delivery_addr_detail",
+            "attr_value": "中海国际中心",
+            "group": "delivery"
+        },
+        {
+            "attr_key": "get_on_addr_nation",
+            "attr_value": "中国",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "get_on_addr_province",
+            "attr_value": "四川省",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "get_on_addr_city",
+            "attr_value": "成都市",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "get_on_addr_county",
+            "attr_value": "高新区",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "get_on_addr_detail",
+            "attr_value": "中海国际中心",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "get_off_addr_nation",
+            "attr_value": "中国",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "get_off_addr_province",
+            "attr_value": "四川省",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "get_off_addr_city",
+            "attr_value": "成都市",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "get_off_addr_county",
+            "attr_value": "高新区",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "get_off_addr_detail",
+            "attr_value": "中海国际中心",
+            "group": "user_car"
+        },
+        {
+            "attr_key": "expect_use_car_time",
+            "attr_value": "2017-04-17 15:20",
+            "group": "other"
+        },
+        {
+            "attr_key": "expect_to_shop_time",
+            "attr_value": "2017-04-17 18:20",
+            "group": "other"
+        },
+        {
+            "attr_key": "flight_no",
+            "attr_value": "CA34234",
+            "group": "other"
+        },
+        {
+            "attr_key": "train_no",
+            "attr_value": "T154",
+            "group": "other"
+        }
+    ],
+    "operatorId": 3121242274529281,
+    "products": [
+        {
+            "bugNum": 2,
+            "price": 80,
+            "productId": 844834747972661248,
+            "region": 3798745846120450,
+            "screening": 1750,
+            "seats": [3794637805846530,3794637805846531,3794637805846532]
+        }
+    ],
+    "remark": "订单备注",
+    "resellerId": 2216619736563739,
+    "spuId": 844138188198064100,
+    "tourists": [
+        {
+            "idcardNo": "513326197810179036",
+            "productId": 4578648648654,
+            "remark": "",
+            "tourist": "鱼彤",
+            "touristMobile": "",
+            "touristSpell": ""
+        },
+        {
+            "idcardNo": "411625197701239364",
+            "productId": 4578648648654,
+            "remark": "",
+            "tourist": "印芷雪",
+            "touristMobile": "",
+            "touristSpell": ""
+        }
+    ],
+    "travelDate": 1492358400000
+}

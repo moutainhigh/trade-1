@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.write.MftourCodeWriteMapper">
+	
+	<!-- 新增订单魔方码记录 -->
+	<insert id="insertMftourCode">
+		<foreach collection="codeList" item="code" index="index" separator=";">
+			insert into t_mftour_code
+				(mf_code,
+				transaction_id,
+				order_id,
+				merch_id,
+				supplier_id,
+				code_state,
+				create_time) 
+				values(
+				#{code.mf_code},
+				#{code.transaction_id},
+				#{code.order_id},
+				#{code.merch_id},
+				#{code.supplier_id},
+				0,
+				sysdate()
+				)
+		</foreach>
+	</insert>
+	
+	<select id="getMftourCodeByOrderId" resultType="com.pzj.trade.order.entity.MftourCodeEntity">
+		select 
+			code_id,
+			mf_code,
+			order_id,
+			merch_id,
+			supplier_id,
+			code_state
+		from t_mftour_code
+			where order_id=#{orderId}
+	</select>
+	
+	<select id="getMftourCodeByTransactionId" resultType="com.pzj.trade.order.entity.MftourCodeEntity">
+		select 
+			code_id,
+			mf_code,
+			transaction_id,
+			order_id,
+			merch_id,
+			supplier_id,
+			code_state
+		from t_mftour_code
+			where transaction_id=#{transactionId}
+	</select>
+</mapper>

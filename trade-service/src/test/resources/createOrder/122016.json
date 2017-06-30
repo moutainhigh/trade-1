@@ -1,0 +1,32 @@
+{
+  "resellerId": 2216619741564038,
+  "payerId": 2216619741564038,
+  "operatorId": 2216619741564038,
+  "ticketOfficeId": 0,
+  "bookType": 0,
+  "travel": 0,
+  "travelDepartId": 2216619741564568,
+  "guideId": 2216619741564569,
+  "salePort": 3,
+  "travelDate": 1494172800000,
+  "vourType": 2,
+  "contactee": {
+    "contactee": "张三null",
+    "contactMobile": "18382301906",
+    "idcardNo": ""
+  },
+  "remark": "",
+  "products": [
+    {
+      "productId": 860379058285285385,
+      "productNum": 2,
+      "price": 0,
+      "strategyRelationId": 860387845939367936,
+      "parentUserId": 2216619736763722,
+      "subUserId": 2216619741564038,
+      "scenicId": 860379058285285376,
+      "show_date": 0
+    }
+  ],
+  "filleds": []
+}

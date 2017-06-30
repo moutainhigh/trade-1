@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.OrderForAccountReadMapper">
+
+
+
+
+    <select id="queryOrders" resultType="com.pzj.trade.order.entity.AccountOrdersEntity">
+        select
+        	o.order_id,
+			o.order_status,
+			o.reseller_id,
+		    o.supplier_id,
+			o.create_time,
+			o.total_amount,
+			o.transaction_id,
+			o.total_num,
+			o.third_pay_type,
+			o.version,
+			o.order_level
+        from
+        	t_order as o
+	    <where>
+			<if test="param.supplier_id &gt; 0">
+			and o.supplier_id=#{param.supplier_id}
+			</if>
+			<if test="param.transaction_ids != null  and param.transaction_ids.size()>0">
+					and o.transaction_id in
+					<foreach collection="param.transaction_ids" item="transaction_id"
+						separator="," open="(" close=")">
+						#{transaction_id}
+					</foreach>
+			</if>
+			
+			<if test="param.order_ids != null  and param.order_ids.size()>0">
+					and o.order_id in
+					<foreach collection="param.order_ids" item="order_id"
+						separator="," open="(" close=")">
+						#{order_id}
+					</foreach>
+					and o.transaction_id=o.order_id
+			</if>
+		</where>
+		group by
+			o.order_id
+		order by
+			o.create_time desc
+    </select> 
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<properties>
+		<property name="dialect" value="mysql"/>
+	</properties>
+
+	<!-- 全局参数 -->
+	<settings>
+		<setting value="false" name="cacheEnabled" />
+		<setting value="true" name="lazyLoadingEnabled" />
+		<setting value="true" name="aggressiveLazyLoading" />
+		<setting value="false" name="multipleResultSetsEnabled" />
+		<setting value="true" name="useColumnLabel" />
+		<setting value="false" name="useGeneratedKeys" />
+		<!-- <setting value="PARTIAL" name="autoMappingBehavior" />
+		<setting value="SIMPLE" name="defaultExecutorType" /> -->
+		<!-- <setting value="true" name="mapUnderscoreToCamelCase" />
+		<setting value="SESSION" name="localCacheScope" />
+		<setting value="NULL" name="jdbcTypeForNull" /> -->
+	</settings>
+	<!-- <plugins> <plugin interceptor="com.pzj.base.common.utils.mybatis.GenCreateInterceptor"> 
+		<property name="flag" value="1"/> </plugin> </plugins> -->
+</configuration>

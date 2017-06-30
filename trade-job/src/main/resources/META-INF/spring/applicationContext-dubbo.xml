@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://code.alibabatech.com/schema/dubbo
+    http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<context:property-placeholder ignore-unresolvable="true" location="classpath*:dubbo.properties,classpath*:sysconfig.properties" />
+
+	<dubbo:application name="${dubbo.application.name}"/>
+	<dubbo:registry address="${dubbo.trade.registry.address}"/>
+	<dubbo:protocol accesslog="false" />
+	<dubbo:consumer check="false"/>
+
+	<dubbo:reference id="orderService" interface="com.pzj.trade.order.service.OrderService" version="1.1" check="false"/>
+	
+	<dubbo:reference id="orderQueryService" interface="com.pzj.trade.order.service.OrderQueryService" version="1.1"  check="false"/>
+	<dubbo:reference id="cancelService" interface="com.pzj.trade.order.service.CancelService" version="1.1"  check="false"/>
+	<dubbo:reference id="confirmService" interface="com.pzj.trade.confirm.service.ConfirmService" version="1.1"  check="false"/>
+	<dubbo:reference id="confirmQueryService" interface="com.pzj.trade.confirm.service.ConfirmQueryService" version="1.1"  check="false"/>
+	<dubbo:reference id="clearingService" interface="com.pzj.trade.clearing.service.ClearingService" version="1.1"  check="false"/>
+	<dubbo:reference id="clearingQueryService" interface="com.pzj.trade.clearing.service.ClearingQueryService" version="1.1"  check="false"/>
+	<dubbo:reference id="paymentTaskService" interface="com.pzj.trade.payment.service.PaymentTaskService" version="1.1"  check="false"/>
+	<dubbo:reference id="bookTaskService" interface="com.pzj.trade.book.service.BookTaskService" version="1.1"  check="false"/>
+</beans>

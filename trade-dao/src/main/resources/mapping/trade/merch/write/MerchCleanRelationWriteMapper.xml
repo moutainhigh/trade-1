@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.merch.write.MerchCleanRelationWriteMapper">
+
+	<!-- 根据订单ID和商品ID获取该商品对应的清算信息. -->
+	<select id="queryCleanRelationByOrderIdAndMerchId" resultType="com.pzj.trade.merch.entity.MerchCleanRelationEntity">
+		select
+			clean_id,
+			order_id,
+			merch_id,
+			effec_time,
+			clean_type,
+			clean_state,
+			is_manual
+		from
+			t_merch_clean_relation
+		where
+			order_id = #{order_id}
+		and
+			merch_id = #{merch_id}
+			
+		and clean_state=#{clean_state}
+			limit 1
+	</select>
+
+	<!-- 查询未清算的记录. -->
+	<select id="queryUnClearRecordByPager" resultType="com.pzj.trade.merch.entity.MerchCleanRelationEntity">
+		select
+			clean_id,
+			order_id,
+			merch_id,
+			effec_time,
+			clean_type,
+			clean_state,
+			is_manual,
+			create_time
+		from
+			t_merch_clean_relation
+		where
+			clean_state = 0
+			 and effec_time &lt; #{now_time}
+		order by clean_id desc
+		limit
+			#{pageIndex},#{pageSize}
+	</select>
+
+	<!-- 保存商品结算关系. -->
+	<insert id="insertMerchCleanRelation" parameterType="com.pzj.trade.merch.entity.MerchCleanRelationEntity">
+		insert into t_merch_clean_relation (
+			order_id,
+			merch_id,
+			effec_time,
+			clean_type,
+			is_manual,
+			is_minus_clean,
+			normal_clean_num,
+			overdue_clean_num,
+			refund_clean_num,
+			normal_clean_amount,
+			overdue_clean_amount,
+			refund_clean_amount
+		)values
+		<foreach collection="relations" item="r" index="index" separator=",">
+			(
+			#{r.order_id},
+			#{r.merch_id},
+			#{r.effec_time},
+			#{r.clean_type},
+			#{r.is_manual},
+			#{r.is_minus_clean},
+			#{r.normal_clean_num},
+			#{r.overdue_clean_num},
+			#{r.refund_clean_num},
+			#{r.normal_clean_amount},
+			#{r.overdue_clean_amount},
+			#{r.refund_clean_amount}
+			)
+		</foreach>
+	</insert>
+	
+	<update id="updateCleanRelationStateById">
+		update
+			t_merch_clean_relation
+		set
+			clean_state = #{state},
+			clean_time = sysdate(),
+			clean_count = clean_count + 1
+		where
+			clean_id = #{clean_id}
+	</update>
+</mapper>

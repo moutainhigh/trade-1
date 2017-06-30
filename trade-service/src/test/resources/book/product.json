@@ -1,0 +1,50 @@
+[{
+  "spuProductOutModel": {
+    "id": 813321109597425664,
+    "supplierId": 2216619736763722,
+    "commonProductId": "2147",
+    "name": "更新测试产品名称2",
+    "productNo": "82745816578",
+    "productType": 5000,
+    "coverImage": "更新测试封面URL",
+    "imageList": "706f58a17c66fd3f8d6de2c79f61061a",
+    "useStartDate": 1485401968000,
+    "useEndDate": 1492659568000,
+    "saleStartDate": 1485401968000,
+    "saleEndDate": 1493523568000,
+    "checkinType": 1,
+    "checkinAddress": "测试",
+    "province": "四川省",
+    "city": "成都市",
+    "country": "锦江区",
+    "isNeedRonda": 0,
+    "isNeedScenic": 0,
+    "isSimple": 1,
+    "flag": 1,
+    "ticketVarie": 0,
+    "createDate": 1490240368000,
+    "updateDate": 1490240368000,
+    "createBy": "xltest01",
+    "updateBy": "2216619736763722"
+  },
+  "skuProductResuts": [
+    {
+      "id": 813592458135965696,
+      "supplierId": "2216619736763722",
+      "spuId": 813321109597425664,
+      "commonProductAttrId": 3057,
+      "productName": "更新测试产品名称hhhhhhhh",
+      "skuName": "10",
+      "region": "0",
+      "ronda": "0",
+      "theaterId": 0,
+      "isUnlimitedStock": "IS_NOT_UNLIMITED_INVENTORY",
+      "stockRuleId": 2216619741565210,
+      "isCombined": "NO",
+      "isSimple": "Simple",
+      "productPrice": 9900,
+      "productType": 5000,
+      "dockType": "NO"
+    }
+  ]
+}]

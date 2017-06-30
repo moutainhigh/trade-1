@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pzj.core.trade.voucher.write.VoucherBriefWriteMapper">
+
+	<insert id="insertVoucherBase"  useGeneratedKeys="true"
+		keyProperty="voucherId" keyColumn="voucher_id" parameterType="com.pzj.core.trade.voucher.entity.VoucherBriefEntity">
+	insert into t_voucher_base
+	(
+	voucher_content,
+	voucher_content_type,
+	start_time,
+	expire_time,
+	show_start_time,
+	show_end_time,
+	voucher_state,
+	voucher_category,
+	supplier_id,
+	transaction_id
+	)
+	values
+	(
+	#{voucherContent},
+	#{voucherContentType},
+	#{startTime},
+	#{expireTime},
+	#{showStartTime},
+	#{showEndTime},
+	#{voucherState},
+	#{voucherCategory},
+	#{supplierId},
+	#{transactionId}
+	)
+	</insert>
+	
+	<insert id="insertVoucherConfirms"  useGeneratedKeys="true" parameterType="com.pzj.core.trade.voucher.entity.VoucherConfirmBriefEntity">
+		insert into t_voucher_confirm
+		(voucher_id,
+		child_product_id,
+		product_id,
+		supplier_id,
+		used_times,
+		max_use_times
+		)
+		values
+			<foreach collection="voucherConfirms" index="idex" item="item" separator=",">
+				(
+					#{item.voucherId},
+					#{item.childProductId},
+					#{item.productId},
+					#{item.supplierId},
+					#{item.usedTimes},
+					#{item.maxUseTimes}
+				)
+			</foreach>
+	</insert>
+	
+	<insert id="insertVoucherExtends"  useGeneratedKeys="true" parameterType="com.pzj.core.trade.voucher.entity.VoucherExtendBriefEntity">
+		insert into t_voucher_extend
+		(voucher_id,
+		supplier_id,
+		voucher_attr,
+		voucher_attr_content
+		)
+		values
+			<foreach collection="voucherExtends" index="idex" item="item" separator=",">
+				(
+					#{item.voucher_id},
+					#{item.supplier_id},
+					#{item.voucher_attr},
+					#{item.voucher_attr_content}
+				)
+			</foreach>
+	</insert>
+</mapper>

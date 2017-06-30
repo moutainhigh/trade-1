@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.core.trade.export.write.OrderExportWriteMapper">
+	
+	
+
+	<!-- 保存订单导出信息 -->
+	<insert id="insertOrderExport" parameterType="com.pzj.core.trade.export.entity.OrderExportEntity" useGeneratedKeys="true" keyColumn="export_id" keyProperty="export_id">
+		insert into t_order_export (
+			file_name,
+			param,
+			export_state,
+			create_time,
+			create_by
+		) values (
+			#{file_name},
+			#{param},
+			#{export_state},
+			sysdate(),
+			#{create_by}
+		)
+	</insert>
+	
+	<update id="updateOrderExportStatus"  parameterType="com.pzj.core.trade.export.entity.OrderExportEntity">
+		update t_order_export
+		set export_state=#{export_state},err_msg=#{err_msg}
+		where export_id = #{export_id}
+	</update>
+</mapper>

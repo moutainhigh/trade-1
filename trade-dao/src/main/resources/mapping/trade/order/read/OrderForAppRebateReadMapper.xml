@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.read.OrderForAppRebateReadMapper">
+
+    <select id="queryOrderTotalNum" resultType="com.pzj.trade.order.entity.OrderCountEntity">
+    select 
+    	count(distinct o.order_id) as order_num,
+    	sum(m.total_num) as merch_num,
+    	sum(o.total_amount) as amount
+    from
+      	t_order o 
+      	LEFT JOIN t_order_merch m ON m.transaction_id = o.order_id
+		LEFT JOIN t_order_strategy s ON s.order_id = o.order_id
+      where
+      s.rebate_method = 2
+      and s.merch_id=m.merch_id
+       and o.order_id=o.transaction_id
+       <if test="param.reseller_id &gt; 0">
+			and o.reseller_id=#{param.reseller_id}
+		</if>
+		<if test="param.order_id !=null">
+	         and o.order_id=#{param.order_id}
+	    </if>
+	    <if test="param.rebate_form_type &gt; 0">
+	        <if test="param.rebate_form_type ==1">
+	            and o.sale_port=7
+	        </if>
+	        <if test="param.rebate_form_type ==2">
+	             and o.sale_port in (1,3,5,8,9)
+	        </if>
+	       
+	    </if>
+	    <if test="param.create_start_time != null">
+			<![CDATA[ and o.create_time >= date_format(#{param.create_start_time},'%Y-%m-%d 00:00:00')]]>
+	    </if>
+		<if test="param.create_end_time != null">
+			<![CDATA[ and o.create_time <= date_format(#{param.create_end_time},'%Y-%m-%d 23:59:59')]]>
+		</if>
+		
+			<if
+				test="param.order_ids != null  and param.order_ids.size()>0">
+				and o.order_id in
+				<foreach collection="param.order_ids" item="order_id"
+					separator="," open="(" close=")">
+					#{order_id}
+				</foreach>
+			</if>
+		    <if test="param.supName !=null">
+				and m.merch_name like CONCAT('%',#{param.supName},'%')
+			</if>
+			<if test="param.orderStatus &gt; 0">
+				and o.order_status = #{param.orderStatus}
+			</if>
+			<if
+				test="param.order_status_list != null  and param.order_status_list.size()>0">
+				and o.order_status in
+				<foreach collection="param.order_status_list" item="order_status"
+					separator="," open="(" close=")">
+					#{order_status}
+				</foreach>
+			</if>
+			
+			
+		
+    </select>
+
+	<!-- 售票员分页查询订单. -->
+    <select id="queryOrders" resultType="com.pzj.trade.order.entity.AppRebateOrdersEntity">
+        select
+        	o.order_id,
+			o.order_status,
+			o.reseller_id,
+			o.create_time,
+			o.transaction_id,
+			o.total_amount,
+			o.confirm_time,
+			o.total_num
+        from
+        	t_order as o
+        LEFT JOIN t_order_merch m ON o.order_id = m.transaction_id
+		LEFT JOIN t_order_strategy s ON s.order_id = o.order_id	
+		where
+		   s.rebate_method = 2
+		    and s.merch_id=m.merch_id
+		    and o.order_id=o.transaction_id
+		<if test="param.reseller_id &gt; 0">
+			and o.reseller_id=#{param.reseller_id}
+		</if>
+		<if test="param.order_id !=null">
+	         and o.order_id=#{param.order_id}
+	    </if>
+	    <if test="param.rebate_form_type &gt; 0">
+	        <if test="param.rebate_form_type ==1">
+	            and o.sale_port=7
+	        </if>
+	        <if test="param.rebate_form_type ==2">
+	             and o.sale_port in (1,3,5,8,9)
+	        </if>
+	       
+	    </if>
+	    <if test="param.create_start_time != null">
+			<![CDATA[ and o.create_time >= date_format(#{param.create_start_time},'%Y-%m-%d 00:00:00')]]>
+	    </if>
+		<if test="param.create_end_time != null">
+			<![CDATA[ and o.create_time <= date_format(#{param.create_end_time},'%Y-%m-%d 23:59:59')]]>
+		</if>
+		<if
+				test="param.order_ids != null  and param.order_ids.size()>0">
+				and o.order_id in
+				<foreach collection="param.order_ids" item="order_id"
+					separator="," open="(" close=")">
+					#{order_id}
+				</foreach>
+		</if>
+		<if test="param.supName !=null">
+			and m.merch_name like CONCAT('%',#{param.supName},'%')
+		</if>
+		<if test="param.orderStatus &gt; 0">
+			and o.order_status = #{param.orderStatus}
+		</if>
+		<if
+			test="param.order_status_list != null  and param.order_status_list.size()>0">
+			and o.order_status in
+			<foreach collection="param.order_status_list" item="order_status"
+				separator="," open="(" close=")">
+				#{order_status}
+			</foreach>
+		</if>
+		
+		
+		group by
+			o.order_id
+		order by
+			o.create_time desc
+<!-- 		limit #{page_index},#{page_size} -->
+    </select> 
+</mapper>

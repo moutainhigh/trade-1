@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.finance.read.FinanceReadMapper">
+<!-- 	<select id="queryTransactionIdsBySaaSUser" -->
+<!-- 		resultType="com.pzj.trade.order.entity.TransferAccountsBaseDataEntity"> -->
+<!-- 		select  -->
+<!-- 		transaction_id as transactionId,'' as refundId -->
+<!-- 		from t_order  -->
+<!-- 		where order_status in (30,40)   -->
+<!-- 		<if test="param.beginDate!=null"> -->
+<!-- 			and confirm_time &gt;= #{param.beginDate}  -->
+<!-- 		</if> -->
+<!-- 		<if test="param.endDate!=null"> -->
+<!-- 			and o.confirm_time &lt; #{param.endDate} -->
+<!-- 		</if> -->
+<!-- 		<if test="userRole!=null and userRole==1"> -->
+<!-- 			and reseller_id= #{param.userId} -->
+<!-- 		</if> -->
+<!-- 		<if test="userRole!=null  and userRole==2"> -->
+<!-- 			and supplier_id= #{param.userId} -->
+<!-- 		</if> -->
+<!-- 		<if test="isOnline==false"> -->
+<!-- 			and pay_way =6 -->
+<!-- 		</if> -->
+<!-- 		<if test="isOnline==true"> -->
+<!-- 			and pay_way in (0,1,2,4) -->
+<!-- 		</if> -->
+		
+<!-- 	</select> -->
+	
+<!-- 	<select id="queryRefundIdByTransactionId" -->
+<!-- 		resultType="com.pzj.trade.order.entity.TransferAccountsBaseDataEntity"> -->
+<!-- 		select  -->
+<!-- 		transaction_id  as transactionId, -->
+<!-- 		refund_id as refundId -->
+<!-- 		from t_refund_apply  -->
+<!-- 		where transaction_id=#{transactionId} -->
+<!-- 		and -->
+<!-- 		refund_state in (1,2) -->
+<!-- 	</select> -->
+	<sql id="subSql1">
+		select 
+		o.transaction_id as transactionId,'' as refundId
+		from t_order o 
+		where o.version=1
+		<if test="param.settleState==1">
+			and o.order_status in (30,40)  
+			<if test="param.beginDate!=null and param.endDate!=null">
+				and o.confirm_time &gt; #{param.beginDate} and o.confirm_time &lt; #{param.endDate}
+			</if>
+		</if>
+		<if test="param.settleState==0">
+			and o.order_status =10 
+			<if test="param.beginDate!=null and param.endDate!=null">
+				and o.create_time &gt; #{param.beginDate} and o.create_time &lt; #{param.endDate}
+			</if>
+		</if>
+		<if test=" param.userRole==1">
+			and o.supplier_id = #{param.userId}
+			<if test="param.relativeUserIds !=null and param.relativeUserIds.size()>0">
+				and o.reseller_id in
+					<foreach collection="param.relativeUserIds" item="reseller" separator="," open="(" close=")">
+						#{reseller}
+					</foreach>
+			</if>
+		</if>
+		<if test=" param.userRole==2">
+			and o.reseller_id= #{param.userId}
+			<if test="param.relativeUserIds !=null and param.relativeUserIds.size()>0">
+				and o.supplier_id in
+					<foreach collection="param.relativeUserIds" item="supplier" separator="," open="(" close=")">
+						#{supplier}
+					</foreach>
+			</if>
+		</if>
+		<if test="isOnline==false">
+			and o.pay_way =6
+		</if>
+		<if test="isOnline==true">
+			and o.pay_way in (0,1,2,4)
+		</if>
+		
+	</sql>
+	<sql id="subSql2">
+		select 
+		o2.transaction_id as transactionId,o2.refund_id as refundId
+		from t_order o1 inner join t_refund_apply o2
+		on o1.transaction_id=o2.transaction_id 
+		where o1.version=1
+		<if test="param.settleState==1">
+			and o1.order_status in (30,40)  
+			<if test="param.beginDate!=null and param.endDate!=null">
+				and o1.confirm_time &gt; #{param.beginDate} and o1.confirm_time &lt; #{param.endDate}
+			</if>
+			and o2.refund_state in (1,2) 
+		</if>
+		<if test="param.settleState==0">
+			and o1.order_status =10 
+			<if test="param.beginDate!=null and param.endDate!=null">
+				and o1.create_time &gt; #{param.beginDate} 	and o1.create_time &lt; #{param.endDate}
+			</if>
+			and o2.refund_state in (1,2) 
+		</if>
+		<if test="param.userRole==1">
+			and o1.supplier_id= #{param.userId}
+			<if test="param.relativeUserIds !=null and param.relativeUserIds.size()>0">
+				and o1.reseller_id in
+					<foreach collection="param.relativeUserIds" item="reseller" separator="," open="(" close=")">
+						#{reseller}
+					</foreach>
+			</if>
+		</if>
+		<if test=" param.userRole==2">
+			and o1.reseller_id = #{param.userId}
+			<if test="param.relativeUserIds !=null and param.relativeUserIds.size()>0">
+				and o1.supplier_id in
+					<foreach collection="param.relativeUserIds" item="supplier" separator="," open="(" close=")">
+						#{supplier}
+					</foreach>
+			</if>
+		</if>
+		<if test="isOnline==false">
+			and o1.pay_way =6
+		</if>
+		<if test="isOnline==true">
+			and o1.pay_way in (0,1,2,4)
+		</if>
+	</sql>
+	<select id="queryTransferAccountsBySaaSUser"
+		resultType="com.pzj.trade.order.entity.TransferAccountsBaseDataEntity">
+		select os.transactionId,os.refundId from (
+		<include refid="subSql1"/>
+		union 
+		<include refid="subSql2"/>
+		) os order by os.transactionId desc
+		
+	</select>
+	
+	<select id="querySettlePartyCount" resultType="int">
+		select count(1) from 
+		( select 
+			<if test="req.userRole==1">
+					 o.reseller_id
+				</if>
+				<if test="req.userRole==2">
+					 o.supplier_id
+				</if>
+				from t_order o
+			<where>
+				<if test="req.settleState==1">
+					o.order_status in (30,40)
+					<if test="req.beginDate!=null and req.endDate!=null">
+						and o.confirm_time &gt; #{req.beginDate} and o.confirm_time &lt; #{req.endDate}
+					</if>
+				</if>
+				<if test="req.settleState==0">
+					o.order_status =10
+					<if test="req.beginDate!=null and req.endDate!=null">
+						and o.create_time &gt; #{req.beginDate} and o.create_time &lt; #{req.endDate}
+					</if>
+				</if>
+				<if test="req.userRole==1">
+						and o.supplier_id=#{req.userId}
+					<if test="req.relativeUserIds !=null and req.relativeUserIds.size()>0">
+						and o.reseller_id in
+						<foreach collection="req.relativeUserIds" item="reseller" separator="," open="(" close=")">
+							#{reseller}
+						</foreach>
+					</if>
+				</if>
+				<if test="req.userRole==2">
+					and o.reseller_id=#{req.userId}
+					<if test="req.relativeUserIds !=null and req.relativeUserIds.size()>0">
+						and o.supplier_id in
+						<foreach collection="req.relativeUserIds" item="supplier" separator="," open="(" close=")">
+							#{supplier}
+						</foreach>
+					</if>
+				</if>
+				and o.pay_way in (0,1,2,4,6)
+			</where>
+				<if test="req.userRole==1">
+					group by o.reseller_id
+				</if>
+				<if test="req.userRole==2">
+					group by o.supplier_id
+				</if>
+				) t
+	</select>
+	
+	<select id="queryCurrentPageSettlePartyIds" resultType="java.lang.Long">
+		select 
+				<if test="req.userRole==1">
+					 o.reseller_id
+				</if>
+				<if test="req.userRole==2">
+					 o.supplier_id
+				</if>
+		 from t_order o
+			
+			<where>
+				<if test="req.settleState==1">
+					o.order_status in (30,40)
+					<if test="req.beginDate!=null and req.endDate!=null">
+						and o.confirm_time &gt; #{req.beginDate} and o.confirm_time &lt; #{req.endDate}
+					</if>
+				</if>
+				<if test="req.settleState==0">
+					o.order_status =10
+					<if test="req.beginDate!=null and req.endDate!=null">
+						and o.create_time &gt; #{req.beginDate} and o.create_time &lt; #{req.endDate}
+					</if>
+				</if>
+					<if test="req.userRole==1">
+						and o.supplier_id=#{req.userId}
+					<if test="req.relativeUserIds !=null and req.relativeUserIds.size()>0">
+						and o.reseller_id in
+						<foreach collection="req.relativeUserIds" item="reseller"
+							separator="," open="(" close=")">
+							#{reseller}
+						</foreach>
+					</if>
+				</if>
+				<if test="req.userRole==2">
+						and o.reseller_id=#{req.userId}
+					<if test="req.relativeUserIds !=null and req.relativeUserIds.size()>0">
+							and o.supplier_id in
+						<foreach collection="req.relativeUserIds" item="supplier"
+								separator="," open="(" close=")">
+								#{supplier}
+						</foreach>
+					</if>
+				</if>
+				and o.pay_way in (0,1,2,4,6)
+			</where>
+				<if test="req.userRole==1">
+					group by o.reseller_id
+				</if>
+				<if test="req.userRole==2">
+					group by o.supplier_id
+				</if>
+				<if test="pageEnable">
+					limit #{start},#{end}
+				</if>
+	</select>
+</mapper>

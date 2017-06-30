@@ -1,0 +1,34 @@
+{
+  "resellerId": 2216619741563912,
+  "payerId": 3694288211279872,
+  "operatorId": 3121242274529281,
+  "bookId": "0",
+  "bookType": 0,
+  "salePort": 5,
+  "travelDate": 1501443080743,
+  
+  "travel": 100,
+  "travelDepartId": 0,
+  "travelDepartName": "pc端4个规格下单",
+  "guideId": 123,
+  "guideIdName": "i am guide",
+  
+  "vourType": 2,
+  "contactee": {
+    "contactee": "chai",
+    "contactMobile": "18600000021",
+    "idcardNo": "111111111111111111"
+  },
+  "remark": "i am remark",
+  "products": [
+    {
+      "productId": 844834747972661248,
+      "productNum": 12,
+      "price": 100,
+      "strategyRelationId": 849561224384376832,
+      "parentUserId": 2216619741563912,
+      "subUserId": 2216619741563912,
+      "scenicId": 1
+    }
+  ]
+}

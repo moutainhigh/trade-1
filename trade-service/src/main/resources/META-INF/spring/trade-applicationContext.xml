@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop" 
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<context:property-placeholder ignore-unresolvable="true" location="classpath*:sysconfig.properties" />
+
+	<context:component-scan base-package="com.pzj.core,com.pzj.trade,com.pzj.voucher">
+	</context:component-scan>
+	<import resource="classpath*:META-INF/spring/trade-applicationContext-mybatis.xml"/>
+
+	<!-- 使用disconf必须添加以下配置-->
+	<bean id="disconfMgrBean" class="com.baidu.disconf.client.DisconfMgrBean"
+	      destroy-method="destroy" lazy-init="false">
+	    <property name="scanPackage" value="com.pzj"/>
+	</bean>
+	<bean id="disconfMgrBean2" class="com.baidu.disconf.client.DisconfMgrBeanSecond"
+	      init-method="init" destroy-method="destroy" lazy-init="false">
+	</bean>
+ 
+	<!--配置更改会自动reload-->
+	<bean id="configproperties_disconf" class="com.baidu.disconf.client.addons.properties.ReloadablePropertiesFactoryBean" lazy-init="false">
+	    <property name="locations">
+	        <list>
+	            <value type="java.lang.String">classpath*:dubbo.properties</value>
+	            <value type="java.lang.String">classpath*:jdbc.properties</value>
+	            <value type="java.lang.String">classpath*:sysconfig.properties</value>
+	            <value type="java.lang.String">classpath*:logback.xml</value>
+	            <value type="java.lang.String">classpath*:ftp.properties</value>
+	            <value type="java.lang.String">classpath*:redis.properties</value>
+	            
+	        </list>
+	    </property>
+	</bean>
+	<bean id="propertyConfigurer"
+	      class="com.baidu.disconf.client.addons.properties.ReloadingPropertyPlaceholderConfigurer" lazy-init="false">
+	    <property name="ignoreResourceNotFound" value="true"/>
+	    <property name="ignoreUnresolvablePlaceholders" value="true"/>
+	    <property name="propertiesArray">
+	        <list>
+	            <ref bean="configproperties_disconf"/>
+	        </list>
+	    </property>
+	</bean>
+	<!-- ID生成器,原型模式 -->
+	<bean class="com.pzj.framework.idgen.IDGenerater" scope="prototype" />
+	
+	<!-- 狗链 -->
+	<!-- <bean id="watchDogChain" class="com.pzj.core.trade.order.watch.WatchDogChain">
+		<property name="dogs">
+			<list>
+				<bean class="com.pzj.core.trade.order.watch.impl.BookDog"/>
+				<bean class="com.pzj.core.trade.order.watch.impl.CloseDoorDog"/>
+			</list>
+		</property>
+	</bean> -->
+
+	<tx:annotation-driven transaction-manager="trade.transactionManager"/>
+	<bean id="trade.transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="trade.write" />
+		<property name="globalRollbackOnParticipationFailure" value="false" /> <!--指定此参数为false-->
+	</bean>
+	
+	
+	<bean id="orangeConfig" class="com.pzj.orange.client.OrangeConfig">
+		<property name="sysName" value="trade"></property>
+	</bean>
+</beans>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.order.write.OrdCanlHandWriteMapper">
+
+	<sql id="orderinf_column">
+		order_id,
+		transaction_id,
+		p_order_id,
+		is_direct,
+		online_pay,
+		is_dock,
+		payer_id,
+		operator_id,
+		supplier_id,
+		reseller_id,
+		travel,
+		travel_depart_id,
+		guide_id,
+		need_confirm as confirm,
+		order_status,
+		total_amount,
+		refund_amount,
+		total_num,
+		checked_num,
+		refund_num,
+		order_type,
+		sale_port,
+		create_time,
+		pay_time,
+		third_code,
+		third_pay_type,
+		confirm_time,
+		contactee,
+		contact_mobile
+	</sql>
+
+	<!-- 查看订单为不是'支付中'的，进行锁定 -->
+	<select id="getOrdLock" resultType="com.pzj.trade.order.entity.OrderEntity">
+		select
+		<include refid="orderinf_column" />
+		from
+		t_order
+		where
+		order_id = #{orderId}
+		and third_pay_type in 
+		<foreach collection="array" item="thirdPayType" index="index" open="(" close=")" separator=",">
+            #{thirdPayType}
+        </foreach>
+		for update
+	</select>
+	
+</mapper>

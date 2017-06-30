@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pzj.trade.confirm.read.ConfirmCodeReadMapper">
+	<!-- 根据订单ID获取订单魔方码 -->
+	<select id="getMftourCodeByOrderId" resultType="com.pzj.trade.confirm.entity.ConfirmCodeEntity">
+		select
+			mf_code,order_id,code_state,source
+		from
+			t_mftour_code
+		where
+			order_id=#{order_id}
+	</select>	
+
+	<!-- 根据交易ID获取订单魔方码 -->
+	<select id="getMftourCodeByTransactionId" resultType="com.pzj.trade.confirm.entity.ConfirmCodeEntity">
+		select
+			mf_code,order_id,code_state,source
+		from
+			t_mftour_code
+		where
+			transaction_id=#{transaction_id}
+			limit 1
+	</select>
+	
+	<!-- 根据魔方码ID获取订单魔方码. -->
+	<select id="getMftourCodeById" resultType="com.pzj.trade.confirm.entity.ConfirmCodeEntity">
+		select
+			code_id,
+			mf_code,
+			order_id,
+			code_state,
+			merch_id,
+			supplier_id,
+			transaction_id,
+			source,
+			create_time
+		from
+			t_mftour_code
+		where
+			code_id=#{code_id}
+	</select>	
+	
+</mapper>
